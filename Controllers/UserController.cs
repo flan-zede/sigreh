@@ -17,7 +17,6 @@ namespace sigreh.Controllers
 {
     [Route("user")]
     [ApiController]
-    [Authorize(Roles = Role.ADMIN)]
     public class UserController : ControllerBase
     {
         private readonly SigrehContext context;
@@ -32,6 +31,7 @@ namespace sigreh.Controllers
         }
 
         [HttpGet]
+        [Authorize(Roles = Role.ADMIN)]
         public ActionResult <List<UserResponse>> Find([FromQuery] QueryParam filter)
         {
             var ctx = from s in context.Users select s;
@@ -61,10 +61,12 @@ namespace sigreh.Controllers
         }
 
         [HttpPost]
+        [Authorize(Roles = Role.ADMIN)]
         public ActionResult <UserResponse> Create(UserCreate data)
         {
             data.Password = BCrypt.Net.BCrypt.HashPassword(data.Password);
             var item = mapper.Map<User>(data);
+            item.CreatedAt = DateTime.UtcNow.Date;
             if (item == null) throw new ArgumentNullException(nameof(item));
             context.Users.Add(item);
             context.SaveChanges();
@@ -72,6 +74,7 @@ namespace sigreh.Controllers
         }
 
         [HttpPut("{id}")]
+        [Authorize(Roles = Role.ADMIN)]
         public ActionResult<UserResponse> Update(int id, UserUpdate data)
         {
             var res = context.Users.FirstOrDefault(p => p.Id == id);
@@ -84,6 +87,7 @@ namespace sigreh.Controllers
         }
 
         [HttpPatch("{id}")]
+        [Authorize(Roles = Role.ADMIN)]
         public ActionResult PartialUpdate(int id, JsonPatchDocument<UserUpdate> data)
         {
             var res = context.Users.FirstOrDefault(p => p.Id == id);
@@ -98,6 +102,7 @@ namespace sigreh.Controllers
         }
 
         [HttpDelete("{id}")]
+        [Authorize(Roles = Role.ADMIN)]
         public ActionResult Delete(int id)
         {
             var res = context.Users.FirstOrDefault(p => p.Id == id);

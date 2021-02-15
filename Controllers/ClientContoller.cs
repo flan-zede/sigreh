@@ -16,7 +16,6 @@ namespace sigreh.Controllers
 {
     [Route("client")]
     [ApiController]
-    [Authorize(Roles = Role.ADMIN)]
     public class ClientController : ControllerBase
     {
         private readonly SigrehContext context;
@@ -145,6 +144,7 @@ namespace sigreh.Controllers
         }
 
         [HttpPut("{id}")]
+        [Authorize(Roles = Role.ADMIN)]
         public ActionResult<ClientResponse> Update(int id, ClientUpdate data)
         {
             var res = context.Clients.FirstOrDefault(p => p.Id == id);
@@ -156,6 +156,7 @@ namespace sigreh.Controllers
         }
 
         [HttpPatch("{id}")]
+        [Authorize(Roles = Role.ADMIN)]
         public ActionResult PartialUpdate(int id, JsonPatchDocument<ClientUpdate> data)
         {
             var res = context.Clients.FirstOrDefault(p => p.Id == id);
@@ -170,6 +171,7 @@ namespace sigreh.Controllers
         }
 
         [HttpDelete("{id}")]
+        [Authorize(Roles = Role.ADMIN)]
         public ActionResult Delete(int id)
         {
             var res = context.Clients.FirstOrDefault(p => p.Id == id);

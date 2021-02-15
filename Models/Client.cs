@@ -48,7 +48,7 @@ namespace sigreh.Models
         public string OccupationType { get; set; }
 
         [Required]
-        public int BedroomNumber { get; set; }
+        public string BedroomNumber { get; set; }
 
         [Required]
         public string BedroomType { get; set; }
