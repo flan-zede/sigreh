@@ -12,7 +12,7 @@ namespace sigreh.Dtos
         [Required]
         public string Name { get; set; }
 
-        public int SubprefectureID { get; set; }
+        public int SubprefectureId { get; set; }
 
         public Boolean DistrictCapital { get; set; }
 
@@ -28,6 +28,8 @@ namespace sigreh.Dtos
         public int Id { get; set; }
 
         public Subprefecture Subprefecture { get; set; }
+        
+        public ICollection<Establishment> Establishments { get; set; }
     }
 
     public class CityUpdate : CityCreate

@@ -1,4 +1,5 @@
-﻿using System;
+﻿using sigreh.Models;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
@@ -25,14 +26,6 @@ namespace sigreh.Dtos
         public string Idnumber { get; set; }
         public string IdnumberNature { get; set; }
         public string Phone { get; set; }
-
-        [Required]
-        public string Districts { get; set; }
-        public string Regions { get; set; }
-        public string Departments { get; set; }
-        public string Subprefectures { get; set; }
-        public string Cities { get; set; }
-        public string Establishments { get; set; }
     }
 
     public class UserCreate: UserInfo
@@ -44,7 +37,16 @@ namespace sigreh.Dtos
     public class UserResponse: UserInfo
     {
         public int Id { get; set; }
+
         public DateTime CreatedAt { get; set; }
+        
+        public ICollection<Region> Regions { get; set; }
+
+        public ICollection<Department> Departments { get; set; }
+
+        public ICollection<Subprefecture> Subprefectures { get; set; }
+
+        public ICollection<Establishment> Establishments { get; set; }
     }
 
     public class UserUpdate : UserCreate
@@ -55,6 +57,7 @@ namespace sigreh.Dtos
     {
         [Required]
         public string Username { get; set; }
+
         [Required]
         public string Password { get; set; }
     }
@@ -62,6 +65,7 @@ namespace sigreh.Dtos
     public class AuthResponse
     {
         public UserResponse User { get; set; }
+        
         public string Jwt { get; set; }
     }
 }

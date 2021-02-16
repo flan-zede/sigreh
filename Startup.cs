@@ -29,7 +29,9 @@ namespace sigreh
             services.AddDbContext<SigrehContext>(opt => opt.UseSqlServer(Configuration.GetConnectionString("SigrehConnection")));
 
             services.AddCors(); 
-            services.AddControllers().AddNewtonsoftJson();
+            services.AddControllers().AddNewtonsoftJson(options =>
+              options.SerializerSettings.ReferenceLoopHandling = Newtonsoft.Json.ReferenceLoopHandling.Ignore
+           );
             services.AddSwaggerGen(c => { c.SwaggerDoc("v1", new OpenApiInfo { Title = "sigreh", Version = "v1" }); });
             services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
 

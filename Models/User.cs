@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -33,13 +34,13 @@ namespace sigreh.Models
         public string IdnumberNature { get; set; }
         public string Phone { get; set; }
         public DateTime CreatedAt { get; set; }
+        
+        public ICollection<Region> Regions { get; set; }
 
-        [Required]
-        public string Districts { get; set; }
-        public string Regions { get; set; }
-        public string Departments { get; set; }
-        public string Subprefectures { get; set; }
-        public string Cities { get; set; }
-        public string Establishments { get; set; }
+        public ICollection<Department> Departments { get; set; }
+
+        public ICollection<Subprefecture> Subprefectures { get; set; }
+        
+        public ICollection<Establishment> Establishments { get; set; }
     }
 }

@@ -11,6 +11,7 @@ using Microsoft.AspNetCore.JsonPatch;
 using Microsoft.AspNetCore.Authorization;
 using sigreh.Wrappers;
 using sigreh.Services;
+using Microsoft.EntityFrameworkCore;
 
 namespace sigreh.Controllers
 {
@@ -30,7 +31,7 @@ namespace sigreh.Controllers
         [HttpGet]
         public ActionResult <List<DepartmentResponse>> Find([FromQuery] QueryParam filter)
         {
-            var ctx = from s in context.Departments select s;
+            var ctx = from s in context.Departments.Include(p => p.Region).Include(p => p.Subprefectures) select s;
             if (filter.Sort == "asc") ctx = ctx.OrderBy(p => p.Id); else ctx = ctx.OrderByDescending(p => p.Id);
             if (filter.Search != null)
             {
@@ -49,7 +50,16 @@ namespace sigreh.Controllers
         [HttpGet("{id}")]
         public ActionResult<DepartmentResponse> FindOne(int id)
         {
-            var res = context.Departments.FirstOrDefault(p => p.Id == id);
+            var res = context.Departments.Include(p => p.Region).Include(p => p.Subprefectures).FirstOrDefault(p => p.Id == id);
+            if (res != null) return Ok(mapper.Map<DepartmentResponse>(res));
+            return NotFound();
+        }
+
+        [HttpGet("multiple/{ids}")]
+        public ActionResult<DepartmentResponse> FindMultiple(string ids)
+        {
+            int[] intIds = Array.ConvertAll(ids.Split(",", StringSplitOptions.RemoveEmptyEntries), s => int.Parse(s));
+            var res = context.Departments.Where(p => intIds.Contains(p.Id)).Include(p => p.Region).Include(p => p.Subprefectures).ToList();
             if (res != null) return Ok(mapper.Map<DepartmentResponse>(res));
             return NotFound();
         }

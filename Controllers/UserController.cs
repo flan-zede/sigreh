@@ -12,6 +12,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.AspNetCore.Authorization;
 using sigreh.Wrappers;
 using sigreh.Services;
+using Microsoft.EntityFrameworkCore;
 
 namespace sigreh.Controllers
 {
@@ -34,7 +35,7 @@ namespace sigreh.Controllers
         [Authorize(Roles = Role.ADMIN)]
         public ActionResult <List<UserResponse>> Find([FromQuery] QueryParam filter)
         {
-            var ctx = from s in context.Users select s;
+            var ctx = from s in context.Users.Include(p => p.Regions).Include(p => p.Departments).Include(p => p.Subprefectures).Include(p => p.Establishments) select s;
             if (filter.Search != null) {
                 string[] keys = filter.Search.Split(" ", StringSplitOptions.RemoveEmptyEntries);
                 ctx = ctx.Where(p => keys.Contains(p.Name) || keys.Contains(p.Firstname) || keys.Contains(p.Email) || keys.Contains(p.Idnumber));
@@ -55,14 +56,21 @@ namespace sigreh.Controllers
         {
             var userId = int.Parse(User.Identity.Name);
             if(id!=userId && !User.IsInRole(Role.ADMIN)) return Forbid();
-            var res = context.Users.FirstOrDefault(p => p.Id == id);
+            var res = context.Users.Include(p => p.Regions).Include(p => p.Departments).Include(p => p.Subprefectures).Include(p => p.Establishments).FirstOrDefault(p => p.Id == id);
             if (res == null) return NotFound();
             return Ok(mapper.Map<UserResponse>(res));
         }
 
+        [HttpGet("multiple/{ids}")]
+        public ActionResult<UserResponse> FindMultiple(string ids)
+        {
+            int[] intIds = Array.ConvertAll(ids.Split(",", StringSplitOptions.RemoveEmptyEntries), s => int.Parse(s));
+            var res = context.Users.Where(p => intIds.Contains(p.Id)).Include(p => p.Regions).Include(p => p.Departments).Include(p => p.Subprefectures).Include(p => p.Establishments).ToList();
+            return Ok(mapper.Map<List<UserResponse>>(res));
+        }
+
         [HttpPost]
-        [Authorize(Roles = Role.ADMIN)]
-        public ActionResult <UserResponse> Create(UserCreate data)
+        public ActionResult<UserResponse> Create(UserCreate data)
         {
             data.Password = BCrypt.Net.BCrypt.HashPassword(data.Password);
             var item = mapper.Map<User>(data);
@@ -139,6 +147,54 @@ namespace sigreh.Controllers
                 return Ok(mapper.Map<UserResponse>(res));
             }
             return Unauthorized();
+        }
+
+        [HttpPost("{id}/region/{related}/{action}")]
+        public ActionResult PostRegion(int id, int related, int action)
+        {
+            var user = context.Users.FirstOrDefault(p => p.Id == id);
+            var joined = context.Regions.FirstOrDefault(p => p.Id == related);
+            if (user == null || joined == null) return NotFound();
+            if(action == 0) { user.Regions.Add(joined); context.Users.Add(user); }
+            else { user.Regions.Remove(joined); }
+            context.SaveChanges();
+            return NoContent();
+        }
+
+        [HttpPost("{id}/department/{related}/{action}")]
+        public ActionResult PostDepartment(int id, int related, int action)
+        {
+            var user = context.Users.FirstOrDefault(p => p.Id == id);
+            var joined = context.Departments.FirstOrDefault(p => p.Id == related);
+            if (user == null || joined == null) return NotFound();
+            if(action == 0) { user.Departments.Add(joined); context.Users.Add(user); }
+            else { user.Departments.Remove(joined); }
+            context.SaveChanges();
+            return NoContent();
+        }
+
+        [HttpPost("{id}/subprefecture/{related}/{action}")]
+        public ActionResult PostSubprefecture(int id, int related, int action)
+        {
+            var user = context.Users.FirstOrDefault(p => p.Id == id);
+            var joined = context.Subprefectures.FirstOrDefault(p => p.Id == related);
+            if (user == null || joined == null) return NotFound();
+            if(action == 0) { user.Subprefectures.Add(joined); context.Users.Add(user); }
+            else { user.Subprefectures.Remove(joined); }
+            context.SaveChanges();
+            return NoContent();
+        }
+
+        [HttpPost("{id}/establishment/{related}/{action}")]
+        public ActionResult PostEstablishment(int id, int related, int action)
+        {
+            var user = context.Users.FirstOrDefault(p => p.Id == id);
+            var joined = context.Establishments.FirstOrDefault(p => p.Id == related);
+            if (user == null || joined == null) return NotFound();
+            if(action == 0) { user.Establishments.Add(joined); context.Users.Add(user); }
+            else { user.Establishments.Remove(joined); }
+            context.SaveChanges();
+            return NoContent();
         }
 
     }

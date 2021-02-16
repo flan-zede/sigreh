@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -56,7 +57,6 @@ namespace sigreh.Models
         [Required]
         public int NumberOfVisitors { get; set; }
 
-        [Required]
         public string PartnerGender { get; set; }
 
         [Required]
@@ -67,13 +67,13 @@ namespace sigreh.Models
 
         public DateTime CreatedAt { get; set; }
 
-        [Required]
-        public int EstablishmentID { get; set; }
-
-        [Required]
-        public int UserID { get; set; }
+        public int EstablishmentId { get; set; }
 
         public Establishment Establishment { get; set; }
+
+        public int UserId { get; set; }
+
         public User User { get; set; }
+
     }
 }

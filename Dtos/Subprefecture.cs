@@ -13,7 +13,7 @@ namespace sigreh.Dtos
         public string Name { get; set; }
 
         [Required]
-        public int DepartmentID { get; set; }
+        public int DepartmentId { get; set; }
     }
 
     public class SubprefectureResponse : SubprefectureCreate
@@ -21,7 +21,10 @@ namespace sigreh.Dtos
         public int Id { get; set; }
         
         public Department Department { get; set; }
+        
         public ICollection<City> Cities { get; set; }
+        
+        public ICollection<User> Users { get; set; }
     }
 
     public class SubprefectureUpdate : SubprefectureCreate

@@ -9,10 +9,7 @@ namespace sigreh.Data
 {
     public class SigrehContext : DbContext
     {
-        public SigrehContext(DbContextOptions<SigrehContext> opt) : base(opt)
-        {
-
-        }
+        public SigrehContext(DbContextOptions<SigrehContext> opt) : base(opt) {}
 
         public DbSet<City> Cities { get; set;  }
         public DbSet<Client> Clients { get; set; }
@@ -22,5 +19,6 @@ namespace sigreh.Data
         public DbSet<Region> Regions { get; set; }
         public DbSet<Subprefecture> Subprefectures { get; set; }
         public DbSet<User> Users { get; set; }
+        
     }
 }

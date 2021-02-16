@@ -11,6 +11,7 @@ using Microsoft.AspNetCore.JsonPatch;
 using Microsoft.AspNetCore.Authorization;
 using sigreh.Wrappers;
 using sigreh.Services;
+using Microsoft.EntityFrameworkCore;
 
 namespace sigreh.Controllers
 {
@@ -31,7 +32,7 @@ namespace sigreh.Controllers
         [Authorize]
         public ActionResult <List<DistrictResponse>> Find([FromQuery] QueryParam filter)
         {
-            var ctx = from s in context.Districts select s;
+            var ctx = from s in context.Districts.Include(p => p.Regions) select s;
             if (filter.Sort == "asc") ctx = ctx.OrderBy(p => p.Id); else ctx = ctx.OrderByDescending(p => p.Id);
             if (filter.Search != null)
             {
@@ -50,7 +51,16 @@ namespace sigreh.Controllers
         [HttpGet("{id}")]
         public ActionResult<DistrictResponse> FindOne(int id)
         {
-            var res = context.Districts.FirstOrDefault(p => p.Id == id);
+            var res = context.Districts.Include(p => p.Regions).FirstOrDefault(p => p.Id == id);
+            if (res != null) return Ok(mapper.Map<DistrictResponse>(res));
+            return NotFound();
+        }
+
+        [HttpGet("multiple/{ids}")]
+        public ActionResult<DistrictResponse> FindMultiple(string ids)
+        {
+            int[] intIds = Array.ConvertAll(ids.Split(",", StringSplitOptions.RemoveEmptyEntries), s => int.Parse(s));
+            var res = context.Districts.Where(p => intIds.Contains(p.Id)).Include(p => p.Regions).ToList();
             if (res != null) return Ok(mapper.Map<DistrictResponse>(res));
             return NotFound();
         }

@@ -11,6 +11,7 @@ using Microsoft.AspNetCore.JsonPatch;
 using Microsoft.AspNetCore.Authorization;
 using sigreh.Wrappers;
 using sigreh.Services;
+using Microsoft.EntityFrameworkCore;
 
 namespace sigreh.Controllers
 {
@@ -32,8 +33,9 @@ namespace sigreh.Controllers
         public ActionResult<List<ClientResponse>> Find([FromQuery] QueryParam filter)
         {
             var user = context.Users.FirstOrDefault(p => p.Id == int.Parse(User.Identity.Name));
-            var ctx = from s in context.Clients select s;
+            var ctx = from s in context.Clients.Include(p => p.Establishment).ThenInclude(p => p.City).Include(p => p.User) select s;
             var page = new Page(filter.Index, filter.Size);
+            List<int> ids = new List<int>();
 
             if (filter.Search != null)
             {
@@ -45,29 +47,55 @@ namespace sigreh.Controllers
 
             if (User.IsInRole(Role.REH) || User.IsInRole(Role.GEH))
             {
-                int[] ids = Array.ConvertAll(user.Establishments.Split(",", StringSplitOptions.RemoveEmptyEntries), s => int.Parse(s));
-                ctx = ctx.Where(p => ids.Contains(p.EstablishmentID));
+                foreach (var establishment in user.Establishments) { 
+                    ids.Add(establishment.Id); 
+                }
+                ctx = ctx.Where(p => ids.Contains(p.EstablishmentId));
                 if (filter.Index > 0) return Ok(PaginatorService.Paginate(mapper.Map<List<REHClientResponse>>(ctx.ToList()), ctx.Count(), page));
                 return Ok(mapper.Map<List<REHClientResponse>>(ctx.ToList()));
             }
             else if (User.IsInRole(Role.PP))
             {
-                int[] ids = Array.ConvertAll(user.Subprefectures.Split(",", StringSplitOptions.RemoveEmptyEntries), s => int.Parse(s));
-                ctx = ctx.Where(p => ids.Contains(p.Establishment.City.SubprefectureID));
+                foreach (var subprefecture in user.Subprefectures) { 
+                   foreach (var cities in subprefecture.Cities) { 
+                        foreach (var establishment in cities.Establishments) { 
+                            ids.Add(establishment.Id); 
+                        } 
+                    }     
+                }
+                ctx = ctx.Where(p => ids.Contains(p.EstablishmentId));
                 if (filter.Index > 0) return Ok(PaginatorService.Paginate(mapper.Map<List<PPClientResponse>>(ctx.ToList()), ctx.Count(), page));
                 return Ok(mapper.Map<List<PPClientResponse>>(ctx.ToList()));
             }
             else if (User.IsInRole(Role.DDMT))
             {
-                int[] ids = Array.ConvertAll(user.Departments.Split(",", StringSplitOptions.RemoveEmptyEntries), s => int.Parse(s));
-                ctx = ctx.Where(p => ids.Contains(p.Establishment.City.Subprefecture.DepartmentID));
+                foreach (var department in user.Departments) { 
+                    foreach (var subprefecture in department.Subprefectures) { 
+                        foreach (var cities in subprefecture.Cities) { 
+                            foreach (var establishment in cities.Establishments) { 
+                                ids.Add(establishment.Id); 
+                            } 
+                        }     
+                    }
+                }
+                ctx = ctx.Where(p => ids.Contains(p.EstablishmentId));
                 if (filter.Index > 0) return Ok(PaginatorService.Paginate(mapper.Map<List<DDMTClientResponse>>(ctx.ToList()), ctx.Count(), page));
                 return Ok(mapper.Map<List<DDMTClientResponse>>(ctx.ToList()));
             }
             else if (User.IsInRole(Role.DRMT))
             {
-                int[] ids = Array.ConvertAll(user.Regions.Split(",", StringSplitOptions.RemoveEmptyEntries), s => int.Parse(s));
-                ctx = ctx.Where(p => ids.Contains(p.Establishment.City.Subprefecture.Department.RegionID));
+                foreach (var region in user.Regions) { 
+                    foreach (var department in region.Departments) { 
+                        foreach (var subprefecture in department.Subprefectures) { 
+                            foreach (var cities in subprefecture.Cities) { 
+                                foreach (var establishment in cities.Establishments) { 
+                                    ids.Add(establishment.Id); 
+                                } 
+                            }     
+                        }
+                    }
+                }
+                ctx = ctx.Where(p => ids.Contains(p.EstablishmentId));
                 if (filter.Index > 0) return Ok(PaginatorService.Paginate(mapper.Map<List<DRMTClientResponse>>(ctx.ToList()), ctx.Count(), page));
                 return Ok(mapper.Map<List<DRMTClientResponse>>(ctx.ToList()));
             }
@@ -93,42 +121,70 @@ namespace sigreh.Controllers
         public ActionResult<ClientResponse> FindOne(int id)
         {
             var user = context.Users.FirstOrDefault(p => p.Id == int.Parse(User.Identity.Name));
+            var ctx = from s in context.Clients.Include(p => p.Establishment).ThenInclude(p => p.City).Include(p => p.User) select s;
+            List<int> ids = new List<int>();
 
             if (User.IsInRole(Role.REH) || User.IsInRole(Role.GEH))
             {
-                int[] ids = Array.ConvertAll(user.Establishments.Split(",", StringSplitOptions.RemoveEmptyEntries), s => int.Parse(s));
-                var res = context.Clients.FirstOrDefault(p => p.Id == id && ids.Contains(p.EstablishmentID));
+                foreach (var establishment in user.Establishments) { 
+                    ids.Add(establishment.Id); 
+                }
+                var res = ctx.FirstOrDefault(p => p.Id == id && ids.Contains(p.EstablishmentId));
                 if (res == null) return NotFound();
-                return Ok(mapper.Map<List<REHClientResponse>>(res));
+                return Ok(mapper.Map<REHClientResponse>(res));
             }
             else if (User.IsInRole(Role.PP))
             {
-                int[] ids = Array.ConvertAll(user.Subprefectures.Split(",", StringSplitOptions.RemoveEmptyEntries), s => int.Parse(s));
-                var res = context.Clients.FirstOrDefault(p => p.Id == id && ids.Contains(p.Establishment.City.SubprefectureID));
+                foreach (var subprefecture in user.Subprefectures) { 
+                   foreach (var cities in subprefecture.Cities) { 
+                        foreach (var establishment in cities.Establishments) { 
+                            ids.Add(establishment.Id); 
+                        } 
+                    }     
+                }
+                var res = ctx.FirstOrDefault(p => p.Id == id && ids.Contains(p.EstablishmentId));
                 if (res == null) return NotFound();
-                return Ok(mapper.Map<List<PPClientResponse>>(res));
+                return Ok(mapper.Map<PPClientResponse>(res));
             }
             else if (User.IsInRole(Role.DDMT))
             {
-                int[] ids = Array.ConvertAll(user.Departments.Split(",", StringSplitOptions.RemoveEmptyEntries), s => int.Parse(s));
-                var res = context.Clients.FirstOrDefault(p => p.Id == id && ids.Contains(p.Establishment.City.Subprefecture.DepartmentID));
+                foreach (var department in user.Departments) { 
+                    foreach (var subprefecture in department.Subprefectures) { 
+                        foreach (var cities in subprefecture.Cities) { 
+                            foreach (var establishment in cities.Establishments) { 
+                                ids.Add(establishment.Id); 
+                            } 
+                        }     
+                    }
+                }
+                var res = ctx.FirstOrDefault(p => p.Id == id && ids.Contains(p.EstablishmentId));
                 if (res == null) return NotFound();
-                return Ok(mapper.Map<List<DDMTClientResponse>>(res));
+                return Ok(mapper.Map<DDMTClientResponse>(res));
             }
             else if (User.IsInRole(Role.DRMT))
             {
-                int[] ids = Array.ConvertAll(user.Regions.Split(",", StringSplitOptions.RemoveEmptyEntries), s => int.Parse(s));
-                var res = context.Clients.FirstOrDefault(p => p.Id == id && ids.Contains(p.Establishment.City.Subprefecture.Department.RegionID));
+                foreach (var region in user.Regions) { 
+                    foreach (var department in region.Departments) { 
+                        foreach (var subprefecture in department.Subprefectures) { 
+                            foreach (var cities in subprefecture.Cities) { 
+                                foreach (var establishment in cities.Establishments) { 
+                                    ids.Add(establishment.Id); 
+                                } 
+                            }     
+                        }
+                    }
+                }
+                var res = ctx.FirstOrDefault(p => p.Id == id && ids.Contains(p.EstablishmentId));
                 if (res == null) return NotFound();
-                return Ok(mapper.Map<List<DRMTClientResponse>>(res));
+                return Ok(mapper.Map<DRMTClientResponse>(res));
             }
             else
             {
-                var res = context.Clients.FirstOrDefault(p => p.Id == id);
+                var res = ctx.FirstOrDefault(p => p.Id == id);
                 if (res == null) return NotFound();
                 if (User.IsInRole(Role.DSMT)) return Ok(mapper.Map<List<DSMTClientResponse>>(res));
                 else if (User.IsInRole(Role.SMI)) return Ok(mapper.Map<List<SMIClientResponse>>(res));
-                else return Ok(mapper.Map<List<ClientResponse>>(res));
+                else return Ok(mapper.Map<ClientResponse>(res));
             }
         }
 
@@ -188,6 +244,12 @@ namespace sigreh.Controllers
         {
             CreateMap<Client, ClientResponse>(); CreateMap<ClientCreate, Client>();
             CreateMap<ClientUpdate, Client>(); CreateMap<Client, ClientUpdate>();
+            CreateMap<Client, REHClientResponse>();
+            CreateMap<Client, PPClientResponse>();
+            CreateMap<Client, DDMTClientResponse>();
+            CreateMap<Client, DRMTClientResponse>();
+            CreateMap<Client, DSMTClientResponse>();
+            CreateMap<Client, SMIClientResponse>();
         }
     }
 }

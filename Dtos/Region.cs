@@ -13,7 +13,7 @@ namespace sigreh.Dtos
         public string Name { get; set; }
         
         [Required]
-        public int DistrictID { get; set; }
+        public int DistrictId { get; set; }
     }
 
     public class RegionResponse : RegionCreate
@@ -21,7 +21,10 @@ namespace sigreh.Dtos
         public int Id { get; set; }
         
         public District District { get; set; }
+        
         public ICollection<Department> Departments { get; set; }
+
+        public ICollection<User> Users { get; set; }
     }
 
     public class RegionUpdate : RegionCreate

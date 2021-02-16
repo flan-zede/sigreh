@@ -12,6 +12,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using sigreh.Wrappers;
 using sigreh.Services;
+using Microsoft.EntityFrameworkCore;
 
 namespace sigreh.Controllers
 {
@@ -31,7 +32,7 @@ namespace sigreh.Controllers
         [HttpGet]
         public ActionResult<List<CityResponse>> Find([FromQuery] QueryParam filter)
         {
-            var ctx = from s in context.Cities select s;
+            var ctx = from s in context.Cities.Include(p => p.Subprefecture) select s;
             if (filter.Sort == "asc") ctx = ctx.OrderBy(p => p.Id); else ctx = ctx.OrderByDescending(p => p.Id);
             if (filter.Search != null)
             {
@@ -50,7 +51,16 @@ namespace sigreh.Controllers
         [HttpGet("{id}")]
         public ActionResult<CityResponse> FindOne(int id)
         {
-            var res = context.Cities.FirstOrDefault(p => p.Id == id);
+            var res = context.Cities.Include(p => p.Subprefecture).FirstOrDefault(p => p.Id == id);
+            if (res != null) return Ok(mapper.Map<CityResponse>(res));
+            return NotFound();
+        }
+
+        [HttpGet("multiple/{ids}")]
+        public ActionResult<CityResponse> FindMultiple(string ids)
+        {
+            int[] intIds = Array.ConvertAll(ids.Split(",", StringSplitOptions.RemoveEmptyEntries), s => int.Parse(s));
+            var res = context.Cities.Where(p => intIds.Contains(p.Id)).Include(p => p.Subprefecture).ToList();
             if (res != null) return Ok(mapper.Map<CityResponse>(res));
             return NotFound();
         }

@@ -64,10 +64,10 @@ namespace sigreh.Dtos
         public string Signature { get; set; }
 
         [Required]
-        public int EstablishmentID { get; set; }
+        public int EstablishmentId { get; set; }
 
         [Required]
-        public int UserID { get; set; }
+        public int UserId { get; set; }
     }
 
     public class ClientResponse : ClientCreate
@@ -77,6 +77,7 @@ namespace sigreh.Dtos
         public DateTime CreatedAt { get; set; }
 
         public Establishment Establishment { get; set; }
+        
         public User User { get; set; }
     }
 

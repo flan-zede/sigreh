@@ -13,6 +13,7 @@ namespace sigreh.Models
 
         [Required]
         public string Name { get; set; }
+        
         public Boolean Autonomy { get; set; }
 
         public ICollection<Region> Regions { get; set; }
