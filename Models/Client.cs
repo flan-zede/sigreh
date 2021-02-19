@@ -34,10 +34,13 @@ namespace sigreh.Models
         public string IdnumberNature { get; set; }
 
         [Required]
+        public string PhoneType { get; set; }
+
+        [Required]
         public string Phone { get; set; }
 
         [Required]
-        public DateTime EnterDate { get; set; }
+        public string OccupationType { get; set; }
 
         [Required]
         public int NumberOfNights { get; set; }
@@ -46,27 +49,18 @@ namespace sigreh.Models
         public int NumberOfHours { get; set; }
 
         [Required]
-        public string OccupationType { get; set; }
-
-        [Required]
         public string BedroomNumber { get; set; }
 
         [Required]
         public string BedroomType { get; set; }
 
         [Required]
-        public int NumberOfVisitors { get; set; }
-
-        public string PartnerGender { get; set; }
-
-        [Required]
-        public DateTime ReleaseDate { get; set; }
-
-        [Required]
-        public string Signature { get; set; }
+        public DateTime EnterDate { get; set; }
 
         public DateTime CreatedAt { get; set; }
-
+        
+        public ICollection<Partner> Partners { get; set; }
+        
         public int EstablishmentId { get; set; }
 
         public Establishment Establishment { get; set; }

@@ -17,7 +17,6 @@ namespace sigreh.Controllers
 {
     [Route("establishment")]
     [ApiController]
-    [Authorize(Roles = Role.ADMIN)]
     public class EstablishmentController : ControllerBase
     {
         private readonly SigrehContext context;
@@ -29,6 +28,7 @@ namespace sigreh.Controllers
         }
 
         [HttpGet]
+        [Authorize]
         public ActionResult <List<EstablishmentResponse>> Find([FromQuery] QueryParam filter)
         {
             var ctx = from s in context.Establishments.Include(p => p.City) select s;
@@ -48,6 +48,7 @@ namespace sigreh.Controllers
         }
 
         [HttpGet("{id}")]
+        [Authorize]
         public ActionResult<EstablishmentResponse> FindOne(int id)
         {
             var res = context.Establishments.Include(p => p.City).FirstOrDefault(p => p.Id == id);
@@ -56,6 +57,7 @@ namespace sigreh.Controllers
         }
 
         [HttpGet("multiple/{ids}")]
+        [Authorize]
         public ActionResult<EstablishmentResponse> FindMultiple(string ids)
         {
             int[] intIds = Array.ConvertAll(ids.Split(",", StringSplitOptions.RemoveEmptyEntries), s => int.Parse(s));
@@ -65,6 +67,7 @@ namespace sigreh.Controllers
         }
 
         [HttpPost]
+        [Authorize(Roles = Role.ADMIN)]
         public ActionResult <EstablishmentResponse> Create(EstablishmentCreate data)
         {
             var item = mapper.Map<Establishment>(data);
@@ -75,6 +78,7 @@ namespace sigreh.Controllers
         }
 
         [HttpPut("{id}")]
+        [Authorize(Roles = Role.ADMIN)]
         public ActionResult<EstablishmentResponse> Update(int id, EstablishmentUpdate data)
         {
             var res = context.Establishments.FirstOrDefault(p => p.Id == id);
@@ -86,6 +90,7 @@ namespace sigreh.Controllers
         }
 
         [HttpPatch("{id}")]
+        [Authorize(Roles = Role.ADMIN)]
         public ActionResult PartialUpdate(int id, JsonPatchDocument<EstablishmentUpdate> data)
         {
             var res = context.Establishments.FirstOrDefault(p => p.Id == id);
@@ -100,6 +105,7 @@ namespace sigreh.Controllers
         }
 
         [HttpDelete("{id}")]
+        [Authorize(Roles = Role.ADMIN)]
         public ActionResult Delete(int id)
         {
             var res = context.Establishments.FirstOrDefault(p => p.Id == id);

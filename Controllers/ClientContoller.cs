@@ -33,7 +33,7 @@ namespace sigreh.Controllers
         public ActionResult<List<ClientResponse>> Find([FromQuery] QueryParam filter)
         {
             var user = context.Users.FirstOrDefault(p => p.Id == int.Parse(User.Identity.Name));
-            var ctx = from s in context.Clients.Include(p => p.Establishment).ThenInclude(p => p.City).Include(p => p.User) select s;
+            var ctx = from s in context.Clients.Include(p => p.Establishment).ThenInclude(p => p.City).Include(p => p.User).Include(p => p.Partners) select s;
             var page = new Page(filter.Index, filter.Size);
             List<int> ids = new List<int>();
 
@@ -47,36 +47,19 @@ namespace sigreh.Controllers
 
             if (User.IsInRole(Role.REH) || User.IsInRole(Role.GEH))
             {
-                foreach (var establishment in user.Establishments) { 
-                    ids.Add(establishment.Id); 
-                }
+                if(user.Establishments != null) foreach (var establishment in user.Establishments) ids.Add(establishment.Id);
                 ctx = ctx.Where(p => ids.Contains(p.EstablishmentId));
                 if (filter.Index > 0) return Ok(PaginatorService.Paginate(mapper.Map<List<REHClientResponse>>(ctx.ToList()), ctx.Count(), page));
                 return Ok(mapper.Map<List<REHClientResponse>>(ctx.ToList()));
             }
-            else if (User.IsInRole(Role.PP))
+            else if (User.IsInRole(Role.DDMT) || User.IsInRole(Role.PP))
             {
-                foreach (var subprefecture in user.Subprefectures) { 
-                   foreach (var cities in subprefecture.Cities) { 
+                if(user.Departments != null) foreach (var department in user.Departments) { 
+                    foreach (var cities in department.Cities) { 
                         foreach (var establishment in cities.Establishments) { 
                             ids.Add(establishment.Id); 
                         } 
-                    }     
-                }
-                ctx = ctx.Where(p => ids.Contains(p.EstablishmentId));
-                if (filter.Index > 0) return Ok(PaginatorService.Paginate(mapper.Map<List<PPClientResponse>>(ctx.ToList()), ctx.Count(), page));
-                return Ok(mapper.Map<List<PPClientResponse>>(ctx.ToList()));
-            }
-            else if (User.IsInRole(Role.DDMT))
-            {
-                foreach (var department in user.Departments) { 
-                    foreach (var subprefecture in department.Subprefectures) { 
-                        foreach (var cities in subprefecture.Cities) { 
-                            foreach (var establishment in cities.Establishments) { 
-                                ids.Add(establishment.Id); 
-                            } 
-                        }     
-                    }
+                    }  
                 }
                 ctx = ctx.Where(p => ids.Contains(p.EstablishmentId));
                 if (filter.Index > 0) return Ok(PaginatorService.Paginate(mapper.Map<List<DDMTClientResponse>>(ctx.ToList()), ctx.Count(), page));
@@ -84,15 +67,13 @@ namespace sigreh.Controllers
             }
             else if (User.IsInRole(Role.DRMT))
             {
-                foreach (var region in user.Regions) { 
+                if(user.Regions != null) foreach (var region in user.Regions) { 
                     foreach (var department in region.Departments) { 
-                        foreach (var subprefecture in department.Subprefectures) { 
-                            foreach (var cities in subprefecture.Cities) { 
-                                foreach (var establishment in cities.Establishments) { 
-                                    ids.Add(establishment.Id); 
-                                } 
-                            }     
-                        }
+                        foreach (var cities in department.Cities) { 
+                            foreach (var establishment in cities.Establishments) { 
+                                ids.Add(establishment.Id); 
+                            } 
+                        }  
                     }
                 }
                 ctx = ctx.Where(p => ids.Contains(p.EstablishmentId));
@@ -121,41 +102,26 @@ namespace sigreh.Controllers
         public ActionResult<ClientResponse> FindOne(int id)
         {
             var user = context.Users.FirstOrDefault(p => p.Id == int.Parse(User.Identity.Name));
-            var ctx = from s in context.Clients.Include(p => p.Establishment).ThenInclude(p => p.City).Include(p => p.User) select s;
+            var ctx = from s in context.Clients.Include(p => p.Establishment).ThenInclude(p => p.City).Include(p => p.User).Include(p => p.Partners) select s;
             List<int> ids = new List<int>();
 
             if (User.IsInRole(Role.REH) || User.IsInRole(Role.GEH))
             {
-                foreach (var establishment in user.Establishments) { 
+                if(user.Establishments != null) foreach (var establishment in user.Establishments) { 
                     ids.Add(establishment.Id); 
                 }
                 var res = ctx.FirstOrDefault(p => p.Id == id && ids.Contains(p.EstablishmentId));
                 if (res == null) return NotFound();
                 return Ok(mapper.Map<REHClientResponse>(res));
             }
-            else if (User.IsInRole(Role.PP))
+            else if (User.IsInRole(Role.DDMT) || User.IsInRole(Role.PP))
             {
-                foreach (var subprefecture in user.Subprefectures) { 
-                   foreach (var cities in subprefecture.Cities) { 
+                if(user.Departments != null) foreach (var department in user.Departments) { 
+                    foreach (var cities in department.Cities) { 
                         foreach (var establishment in cities.Establishments) { 
                             ids.Add(establishment.Id); 
                         } 
-                    }     
-                }
-                var res = ctx.FirstOrDefault(p => p.Id == id && ids.Contains(p.EstablishmentId));
-                if (res == null) return NotFound();
-                return Ok(mapper.Map<PPClientResponse>(res));
-            }
-            else if (User.IsInRole(Role.DDMT))
-            {
-                foreach (var department in user.Departments) { 
-                    foreach (var subprefecture in department.Subprefectures) { 
-                        foreach (var cities in subprefecture.Cities) { 
-                            foreach (var establishment in cities.Establishments) { 
-                                ids.Add(establishment.Id); 
-                            } 
-                        }     
-                    }
+                    } 
                 }
                 var res = ctx.FirstOrDefault(p => p.Id == id && ids.Contains(p.EstablishmentId));
                 if (res == null) return NotFound();
@@ -163,15 +129,13 @@ namespace sigreh.Controllers
             }
             else if (User.IsInRole(Role.DRMT))
             {
-                foreach (var region in user.Regions) { 
+                if(user.Regions != null) foreach (var region in user.Regions) { 
                     foreach (var department in region.Departments) { 
-                        foreach (var subprefecture in department.Subprefectures) { 
-                            foreach (var cities in subprefecture.Cities) { 
-                                foreach (var establishment in cities.Establishments) { 
-                                    ids.Add(establishment.Id); 
-                                } 
-                            }     
-                        }
+                        foreach (var cities in department.Cities) { 
+                            foreach (var establishment in cities.Establishments) { 
+                                ids.Add(establishment.Id); 
+                            } 
+                        }  
                     }
                 }
                 var res = ctx.FirstOrDefault(p => p.Id == id && ids.Contains(p.EstablishmentId));
@@ -194,13 +158,14 @@ namespace sigreh.Controllers
         {
             var item = mapper.Map<Client>(data);
             if (item == null) throw new ArgumentNullException(nameof(item));
+            item.CreatedAt = DateTime.UtcNow.Date;
             context.Clients.Add(item);
             context.SaveChanges();
             return Ok(mapper.Map<ClientResponse>(item));
         }
 
         [HttpPut("{id}")]
-        [Authorize(Roles = Role.ADMIN)]
+        [Authorize(Roles = Role.REH + "," + Role.ADMIN)]
         public ActionResult<ClientResponse> Update(int id, ClientUpdate data)
         {
             var res = context.Clients.FirstOrDefault(p => p.Id == id);
@@ -212,7 +177,7 @@ namespace sigreh.Controllers
         }
 
         [HttpPatch("{id}")]
-        [Authorize(Roles = Role.ADMIN)]
+        [Authorize(Roles = Role.REH + "," + Role.ADMIN)]
         public ActionResult PartialUpdate(int id, JsonPatchDocument<ClientUpdate> data)
         {
             var res = context.Clients.FirstOrDefault(p => p.Id == id);
@@ -227,7 +192,7 @@ namespace sigreh.Controllers
         }
 
         [HttpDelete("{id}")]
-        [Authorize(Roles = Role.ADMIN)]
+        [Authorize(Roles = Role.REH + "," + Role.ADMIN)]
         public ActionResult Delete(int id)
         {
             var res = context.Clients.FirstOrDefault(p => p.Id == id);
@@ -236,6 +201,7 @@ namespace sigreh.Controllers
             context.SaveChanges();
             return NoContent();
         }
+
     }
 
     public class ClientProfile : Profile

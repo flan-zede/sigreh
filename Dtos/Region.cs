@@ -7,27 +7,14 @@ using System.Threading.Tasks;
 
 namespace sigreh.Dtos
 {
-    public class RegionCreate
-    {
-        [Required]
-        public string Name { get; set; }
-        
-        [Required]
-        public int DistrictId { get; set; }
-    }
-
-    public class RegionResponse : RegionCreate
+    public class RegionResponse
     {
         public int Id { get; set; }
-        
-        public District District { get; set; }
-        
+
+        public string Name { get; set; }
+
         public ICollection<Department> Departments { get; set; }
 
         public ICollection<User> Users { get; set; }
-    }
-
-    public class RegionUpdate : RegionCreate
-    {
     }
 }

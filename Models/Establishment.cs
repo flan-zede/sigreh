@@ -20,8 +20,6 @@ namespace sigreh.Models
 
         public string Municipality { get; set; }
 
-        public string Street { get; set; }
-
         public string Location { get; set; }
 
         public int CityId { get; set; }

@@ -7,23 +7,21 @@ using System.Threading.Tasks;
 
 namespace sigreh.Dtos
 {
-    public class DistrictCreate
+    public class PartnerCreate
     {
         [Required]
-        public string Name { get; set; }
+        public string Gender { get; set; }
 
+        public string name { get; set; }
+
+        public int Age { get; set; }
+        
         [Required]
-        public Boolean Autonomy { get; set; }
+        public int UserId { get; set; }
     }
 
-    public class DistrictResponse : DistrictCreate
+    public class PartnerResponse : PartnerCreate
     {
         public int Id { get; set; }
-
-        public ICollection<Region> Regions { get; set; }
-    }
-
-    public class DistrictUpdate : DistrictCreate
-    {
     }
 }

@@ -19,7 +19,7 @@ namespace sigreh.Models
 
         public Region Region { get; set; }
 
-        public ICollection<Subprefecture> Subprefectures { get; set; }
+        public ICollection<City> Cities { get; set; }
         
         public ICollection<User> Users { get; set; }
     }

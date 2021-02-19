@@ -10,8 +10,8 @@ using sigreh.Data;
 namespace sigreh.Migrations
 {
     [DbContext(typeof(SigrehContext))]
-    [Migration("20210216201008_UserManayToManyAdded")]
-    partial class UserManayToManyAdded
+    [Migration("20210218061732_First")]
+    partial class First
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
@@ -66,21 +66,6 @@ namespace sigreh.Migrations
                     b.ToTable("RegionUser");
                 });
 
-            modelBuilder.Entity("SubprefectureUser", b =>
-                {
-                    b.Property<int>("SubprefecturesId")
-                        .HasColumnType("int");
-
-                    b.Property<int>("UsersId")
-                        .HasColumnType("int");
-
-                    b.HasKey("SubprefecturesId", "UsersId");
-
-                    b.HasIndex("UsersId");
-
-                    b.ToTable("SubprefectureUser");
-                });
-
             modelBuilder.Entity("sigreh.Models.City", b =>
                 {
                     b.Property<int>("Id")
@@ -88,28 +73,16 @@ namespace sigreh.Migrations
                         .HasColumnType("int")
                         .UseIdentityColumn();
 
-                    b.Property<bool>("DepartmentCapital")
-                        .HasColumnType("bit");
-
-                    b.Property<bool>("DistrictCapital")
-                        .HasColumnType("bit");
+                    b.Property<int>("DepartmentId")
+                        .HasColumnType("int");
 
                     b.Property<string>("Name")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<bool>("RegionCapital")
-                        .HasColumnType("bit");
-
-                    b.Property<bool>("SubprefectureCapital")
-                        .HasColumnType("bit");
-
-                    b.Property<int>("SubprefectureId")
-                        .HasColumnType("int");
-
                     b.HasKey("Id");
 
-                    b.HasIndex("SubprefectureId");
+                    b.HasIndex("DepartmentId");
 
                     b.ToTable("Cities");
                 });
@@ -171,24 +144,15 @@ namespace sigreh.Migrations
                     b.Property<int>("NumberOfNights")
                         .HasColumnType("int");
 
-                    b.Property<int>("NumberOfVisitors")
-                        .HasColumnType("int");
-
                     b.Property<string>("OccupationType")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("PartnerGender")
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("Phone")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<DateTime>("ReleaseDate")
-                        .HasColumnType("datetime2");
-
-                    b.Property<string>("Signature")
+                    b.Property<string>("PhoneType")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
@@ -225,25 +189,6 @@ namespace sigreh.Migrations
                     b.ToTable("Departments");
                 });
 
-            modelBuilder.Entity("sigreh.Models.District", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int")
-                        .UseIdentityColumn();
-
-                    b.Property<bool>("Autonomy")
-                        .HasColumnType("bit");
-
-                    b.Property<string>("Name")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("Districts");
-                });
-
             modelBuilder.Entity("sigreh.Models.Establishment", b =>
                 {
                     b.Property<int>("Id")
@@ -268,14 +213,41 @@ namespace sigreh.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<string>("Street")
-                        .HasColumnType("nvarchar(max)");
-
                     b.HasKey("Id");
 
                     b.HasIndex("CityId");
 
                     b.ToTable("Establishments");
+                });
+
+            modelBuilder.Entity("sigreh.Models.Partner", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int")
+                        .UseIdentityColumn();
+
+                    b.Property<int>("Age")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("ClientId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Gender")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("UserId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("name")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ClientId");
+
+                    b.ToTable("Partners");
                 });
 
             modelBuilder.Entity("sigreh.Models.Region", b =>
@@ -285,39 +257,13 @@ namespace sigreh.Migrations
                         .HasColumnType("int")
                         .UseIdentityColumn();
 
-                    b.Property<int>("DistrictId")
-                        .HasColumnType("int");
-
                     b.Property<string>("Name")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.HasKey("Id");
-
-                    b.HasIndex("DistrictId");
 
                     b.ToTable("Regions");
-                });
-
-            modelBuilder.Entity("sigreh.Models.Subprefecture", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int")
-                        .UseIdentityColumn();
-
-                    b.Property<int>("DepartmentId")
-                        .HasColumnType("int");
-
-                    b.Property<string>("Name")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("DepartmentId");
-
-                    b.ToTable("Subprefectures");
                 });
 
             modelBuilder.Entity("sigreh.Models.User", b =>
@@ -358,11 +304,19 @@ namespace sigreh.Migrations
                     b.Property<string>("Nationality")
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<int?>("PartnerId")
+                        .HasColumnType("int");
+
                     b.Property<string>("Password")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("Phone")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("PhoneType")
+                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("Role")
@@ -373,6 +327,8 @@ namespace sigreh.Migrations
                         .HasColumnType("nvarchar(max)");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("PartnerId");
 
                     b.ToTable("Users");
                 });
@@ -422,30 +378,15 @@ namespace sigreh.Migrations
                         .IsRequired();
                 });
 
-            modelBuilder.Entity("SubprefectureUser", b =>
-                {
-                    b.HasOne("sigreh.Models.Subprefecture", null)
-                        .WithMany()
-                        .HasForeignKey("SubprefecturesId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("sigreh.Models.User", null)
-                        .WithMany()
-                        .HasForeignKey("UsersId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-                });
-
             modelBuilder.Entity("sigreh.Models.City", b =>
                 {
-                    b.HasOne("sigreh.Models.Subprefecture", "Subprefecture")
+                    b.HasOne("sigreh.Models.Department", "Department")
                         .WithMany("Cities")
-                        .HasForeignKey("SubprefectureId")
+                        .HasForeignKey("DepartmentId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.Navigation("Subprefecture");
+                    b.Navigation("Department");
                 });
 
             modelBuilder.Entity("sigreh.Models.Client", b =>
@@ -481,7 +422,7 @@ namespace sigreh.Migrations
             modelBuilder.Entity("sigreh.Models.Establishment", b =>
                 {
                     b.HasOne("sigreh.Models.City", "City")
-                        .WithMany()
+                        .WithMany("Establishments")
                         .HasForeignKey("CityId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
@@ -489,46 +430,43 @@ namespace sigreh.Migrations
                     b.Navigation("City");
                 });
 
-            modelBuilder.Entity("sigreh.Models.Region", b =>
+            modelBuilder.Entity("sigreh.Models.Partner", b =>
                 {
-                    b.HasOne("sigreh.Models.District", "District")
-                        .WithMany("Regions")
-                        .HasForeignKey("DistrictId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("District");
+                    b.HasOne("sigreh.Models.Client", null)
+                        .WithMany("Partners")
+                        .HasForeignKey("ClientId");
                 });
 
-            modelBuilder.Entity("sigreh.Models.Subprefecture", b =>
+            modelBuilder.Entity("sigreh.Models.User", b =>
                 {
-                    b.HasOne("sigreh.Models.Department", "Department")
-                        .WithMany("Subprefectures")
-                        .HasForeignKey("DepartmentId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                    b.HasOne("sigreh.Models.Partner", null)
+                        .WithMany("User")
+                        .HasForeignKey("PartnerId");
+                });
 
-                    b.Navigation("Department");
+            modelBuilder.Entity("sigreh.Models.City", b =>
+                {
+                    b.Navigation("Establishments");
+                });
+
+            modelBuilder.Entity("sigreh.Models.Client", b =>
+                {
+                    b.Navigation("Partners");
                 });
 
             modelBuilder.Entity("sigreh.Models.Department", b =>
                 {
-                    b.Navigation("Subprefectures");
+                    b.Navigation("Cities");
                 });
 
-            modelBuilder.Entity("sigreh.Models.District", b =>
+            modelBuilder.Entity("sigreh.Models.Partner", b =>
                 {
-                    b.Navigation("Regions");
+                    b.Navigation("User");
                 });
 
             modelBuilder.Entity("sigreh.Models.Region", b =>
                 {
                     b.Navigation("Departments");
-                });
-
-            modelBuilder.Entity("sigreh.Models.Subprefecture", b =>
-                {
-                    b.Navigation("Cities");
                 });
 #pragma warning restore 612, 618
         }

@@ -15,10 +15,6 @@ namespace sigreh.Models
         [Required]
         public string Name { get; set; }
 
-        public int DistrictId { get; set; }
-
-        public District District { get; set; }
-
         public ICollection<Department> Departments { get; set; }
 
         public ICollection<User> Users { get; set; }

@@ -17,7 +17,6 @@ namespace sigreh.Controllers
 {
     [Route("region")]
     [ApiController]
-    [Authorize(Roles = Role.ADMIN)]
     public class RegionController : ControllerBase
     {
         private readonly SigrehContext context;
@@ -31,7 +30,7 @@ namespace sigreh.Controllers
         [HttpGet]
         public ActionResult <List<RegionResponse>> Find([FromQuery] QueryParam filter)
         {
-            var ctx = from s in context.Regions.Include(p => p.District).Include(p => p.Departments) select s;
+            var ctx = from s in context.Regions.Include(p => p.Departments) select s;
             if (filter.Sort == "asc") ctx = ctx.OrderBy(p => p.Id); else ctx = ctx.OrderByDescending(p => p.Id);
             if (filter.Search != null)
             {
@@ -50,7 +49,7 @@ namespace sigreh.Controllers
         [HttpGet("{id}")]
         public ActionResult<RegionResponse> FindOne(int id)
         {
-            var res = context.Regions.Include(p => p.District).Include(p => p.Departments).FirstOrDefault(p => p.Id == id);
+            var res = context.Regions.Include(p => p.Departments).FirstOrDefault(p => p.Id == id);
             if (res != null) return Ok(mapper.Map<RegionResponse>(res));
             return NotFound();
         }
@@ -64,58 +63,13 @@ namespace sigreh.Controllers
             return NotFound();
         }
 
-        [HttpPost]
-        public ActionResult <RegionResponse> Create(RegionCreate data)
-        {
-            var item = mapper.Map<Region>(data);
-            if (item == null) throw new ArgumentNullException(nameof(item));
-            context.Regions.Add(item);
-            context.SaveChanges();
-            return Ok(mapper.Map<RegionResponse>(item));
-        }
-
-        [HttpPut("{id}")]
-        public ActionResult<RegionResponse> Update(int id, RegionUpdate data)
-        {
-            var res = context.Regions.FirstOrDefault(p => p.Id == id);
-            if (res == null) return NotFound();
-            mapper.Map(data, res);
-            context.Regions.Update(res);
-            context.SaveChanges();
-            return NoContent();
-        }
-
-        [HttpPatch("{id}")]
-        public ActionResult PartialUpdate(int id, JsonPatchDocument<RegionUpdate> data)
-        {
-            var res = context.Regions.FirstOrDefault(p => p.Id == id);
-            if (res == null) return NotFound();
-            var item = mapper.Map<RegionUpdate>(res);
-            data.ApplyTo(item, ModelState);
-            if(!TryValidateModel(item)) return ValidationProblem(ModelState);
-            mapper.Map(item, res);
-            context.Regions.Update(res);
-            context.SaveChanges();
-            return NoContent();
-        }
-
-        [HttpDelete("{id}")]
-        public ActionResult Delete(int id)
-        {
-            var res = context.Regions.FirstOrDefault(p => p.Id == id);
-            if (res == null) return NotFound();
-            context.Regions.Remove(res);
-            context.SaveChanges();
-            return NoContent();
-        }
     }
 
     public class RegionProfile : Profile
     {
         public RegionProfile()
         {
-            CreateMap<Region, RegionResponse>(); CreateMap<RegionCreate, Region>();
-            CreateMap<RegionUpdate, Region>(); CreateMap<Region, RegionUpdate>();
+            CreateMap<Region, RegionResponse>(); 
         }
     }
 }

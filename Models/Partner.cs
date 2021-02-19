@@ -7,20 +7,21 @@ using System.Threading.Tasks;
 
 namespace sigreh.Models
 {
-    public class Subprefecture
+    public class Partner
     {
         [Key]
         public int Id { get; set; }
 
         [Required]
-        public string Name { get; set; }
+        public string Gender { get; set; }
 
-        public int DepartmentId { get; set; }
+        public string name { get; set; }
 
-        public Department Department { get; set; }
-
-        public ICollection<City> Cities { get; set; }
+        public int Age { get; set; }
         
-        public ICollection<User> Users { get; set; }
+        [Required]
+        public int UserId { get; set; }
+
+        public ICollection<User> User { get; set; }
     }
 }

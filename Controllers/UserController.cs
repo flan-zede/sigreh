@@ -35,7 +35,7 @@ namespace sigreh.Controllers
         [Authorize(Roles = Role.ADMIN)]
         public ActionResult <List<UserResponse>> Find([FromQuery] QueryParam filter)
         {
-            var ctx = from s in context.Users.Include(p => p.Regions).Include(p => p.Departments).Include(p => p.Subprefectures).Include(p => p.Establishments) select s;
+            var ctx = from s in context.Users.Include(p => p.Regions).Include(p => p.Departments).Include(p => p.Establishments) select s;
             if (filter.Search != null) {
                 string[] keys = filter.Search.Split(" ", StringSplitOptions.RemoveEmptyEntries);
                 ctx = ctx.Where(p => keys.Contains(p.Name) || keys.Contains(p.Firstname) || keys.Contains(p.Email) || keys.Contains(p.Idnumber));
@@ -56,20 +56,22 @@ namespace sigreh.Controllers
         {
             var userId = int.Parse(User.Identity.Name);
             if(id!=userId && !User.IsInRole(Role.ADMIN)) return Forbid();
-            var res = context.Users.Include(p => p.Regions).Include(p => p.Departments).Include(p => p.Subprefectures).Include(p => p.Establishments).FirstOrDefault(p => p.Id == id);
+            var res = context.Users.Include(p => p.Regions).Include(p => p.Departments).Include(p => p.Establishments).FirstOrDefault(p => p.Id == id);
             if (res == null) return NotFound();
             return Ok(mapper.Map<UserResponse>(res));
         }
 
         [HttpGet("multiple/{ids}")]
+        [Authorize(Roles = Role.ADMIN)]
         public ActionResult<UserResponse> FindMultiple(string ids)
         {
             int[] intIds = Array.ConvertAll(ids.Split(",", StringSplitOptions.RemoveEmptyEntries), s => int.Parse(s));
-            var res = context.Users.Where(p => intIds.Contains(p.Id)).Include(p => p.Regions).Include(p => p.Departments).Include(p => p.Subprefectures).Include(p => p.Establishments).ToList();
+            var res = context.Users.Where(p => intIds.Contains(p.Id)).Include(p => p.Regions).Include(p => p.Departments).Include(p => p.Establishments).ToList();
             return Ok(mapper.Map<List<UserResponse>>(res));
         }
 
         [HttpPost]
+        [Authorize(Roles = Role.ADMIN)]
         public ActionResult<UserResponse> Create(UserCreate data)
         {
             data.Password = BCrypt.Net.BCrypt.HashPassword(data.Password);
@@ -142,57 +144,46 @@ namespace sigreh.Controllers
         {
             var userId = int.Parse(User.Identity.Name);
             var res = context.Users.FirstOrDefault(p => p.Id == userId);
-            if (res != null)
-            {
-                return Ok(mapper.Map<UserResponse>(res));
-            }
+            if (res != null) return Ok(mapper.Map<UserResponse>(res));
             return Unauthorized();
         }
 
-        [HttpPost("{id}/region/{related}/{action}")]
-        public ActionResult PostRegion(int id, int related, int action)
+        [HttpPost(), Route("relation")]
+        [Authorize(Roles = Role.ADMIN)]
+        public ActionResult PostRelation(Relation body)
         {
-            var user = context.Users.FirstOrDefault(p => p.Id == id);
-            var joined = context.Regions.FirstOrDefault(p => p.Id == related);
-            if (user == null || joined == null) return NotFound();
-            if(action == 0) { user.Regions.Add(joined); context.Users.Add(user); }
-            else { user.Regions.Remove(joined); }
-            context.SaveChanges();
-            return NoContent();
-        }
-
-        [HttpPost("{id}/department/{related}/{action}")]
-        public ActionResult PostDepartment(int id, int related, int action)
-        {
-            var user = context.Users.FirstOrDefault(p => p.Id == id);
-            var joined = context.Departments.FirstOrDefault(p => p.Id == related);
-            if (user == null || joined == null) return NotFound();
-            if(action == 0) { user.Departments.Add(joined); context.Users.Add(user); }
-            else { user.Departments.Remove(joined); }
-            context.SaveChanges();
-            return NoContent();
-        }
-
-        [HttpPost("{id}/subprefecture/{related}/{action}")]
-        public ActionResult PostSubprefecture(int id, int related, int action)
-        {
-            var user = context.Users.FirstOrDefault(p => p.Id == id);
-            var joined = context.Subprefectures.FirstOrDefault(p => p.Id == related);
-            if (user == null || joined == null) return NotFound();
-            if(action == 0) { user.Subprefectures.Add(joined); context.Users.Add(user); }
-            else { user.Subprefectures.Remove(joined); }
-            context.SaveChanges();
-            return NoContent();
-        }
-
-        [HttpPost("{id}/establishment/{related}/{action}")]
-        public ActionResult PostEstablishment(int id, int related, int action)
-        {
-            var user = context.Users.FirstOrDefault(p => p.Id == id);
-            var joined = context.Establishments.FirstOrDefault(p => p.Id == related);
-            if (user == null || joined == null) return NotFound();
-            if(action == 0) { user.Establishments.Add(joined); context.Users.Add(user); }
-            else { user.Establishments.Remove(joined); }
+            var user = context.Users.FirstOrDefault(p => p.Id == body.Id);
+            if (user == null) return NotFound();
+            switch (body.Path)
+            {
+                case "region":
+                    {
+                        var related = context.Regions.FirstOrDefault(p => p.Id == body.RelatedId);
+                        if (related == null) return NotFound();
+                        if (body.Action == "add") user.Regions.Add(related);
+                        else user.Regions.Remove(related);
+                    }
+                    break;
+                case "department":
+                    {
+                        var related = context.Departments.FirstOrDefault(p => p.Id == body.RelatedId);
+                        if (related == null) return NotFound();
+                        if (body.Action == "add") user.Departments.Add(related);
+                        else user.Departments.Remove(related);
+                    }
+                    break;
+                case "establishment":
+                    {
+                        var related = context.Establishments.FirstOrDefault(p => p.Id == body.RelatedId);
+                        if (related == null) return NotFound();
+                        if (body.Action == "add") user.Establishments.Add(related);
+                        else user.Establishments.Remove(related);
+                    }
+                    break;
+                default:
+                    break;
+            }
+            context.Users.Update(user);
             context.SaveChanges();
             return NoContent();
         }
@@ -203,8 +194,10 @@ namespace sigreh.Controllers
     {
         public UserProfile()
         {
-            CreateMap<User, UserResponse>(); CreateMap<UserCreate, User>();
-            CreateMap<UserUpdate, User>(); CreateMap<User, UserUpdate>();
+            CreateMap<User, UserResponse>(); 
+            CreateMap<UserCreate, User>();
+            CreateMap<UserUpdate, User>(); 
+            CreateMap<User, UserUpdate>();
             CreateMap<Login, User>();
         }
     }

@@ -18,7 +18,6 @@ namespace sigreh.Controllers
 {
     [Route("city")]
     [ApiController]
-    [Authorize(Roles = Role.ADMIN)]
     public class CityController : ControllerBase
     {
         private readonly SigrehContext context;
@@ -32,7 +31,7 @@ namespace sigreh.Controllers
         [HttpGet]
         public ActionResult<List<CityResponse>> Find([FromQuery] QueryParam filter)
         {
-            var ctx = from s in context.Cities.Include(p => p.Subprefecture) select s;
+            var ctx = from s in context.Cities.Include(p => p.Department) select s;
             if (filter.Sort == "asc") ctx = ctx.OrderBy(p => p.Id); else ctx = ctx.OrderByDescending(p => p.Id);
             if (filter.Search != null)
             {
@@ -51,7 +50,7 @@ namespace sigreh.Controllers
         [HttpGet("{id}")]
         public ActionResult<CityResponse> FindOne(int id)
         {
-            var res = context.Cities.Include(p => p.Subprefecture).FirstOrDefault(p => p.Id == id);
+            var res = context.Cities.Include(p => p.Department).FirstOrDefault(p => p.Id == id);
             if (res != null) return Ok(mapper.Map<CityResponse>(res));
             return NotFound();
         }
@@ -60,12 +59,13 @@ namespace sigreh.Controllers
         public ActionResult<CityResponse> FindMultiple(string ids)
         {
             int[] intIds = Array.ConvertAll(ids.Split(",", StringSplitOptions.RemoveEmptyEntries), s => int.Parse(s));
-            var res = context.Cities.Where(p => intIds.Contains(p.Id)).Include(p => p.Subprefecture).ToList();
+            var res = context.Cities.Where(p => intIds.Contains(p.Id)).Include(p => p.Department).ToList();
             if (res != null) return Ok(mapper.Map<CityResponse>(res));
             return NotFound();
         }
 
         [HttpPost]
+        [Authorize(Roles = Role.ADMIN)]
         public ActionResult<CityResponse> Create(CityCreate data)
         {
             var item = mapper.Map<City>(data);
@@ -76,6 +76,7 @@ namespace sigreh.Controllers
         }
 
         [HttpPut("{id}")]
+        [Authorize(Roles = Role.ADMIN)]
         public ActionResult<CityResponse> Update(int id, CityUpdate data)
         {
             var res = context.Cities.FirstOrDefault(p => p.Id == id);
@@ -87,6 +88,7 @@ namespace sigreh.Controllers
         }
 
         [HttpPatch("{id}")]
+        [Authorize(Roles = Role.ADMIN)]
         public ActionResult PartialUpdate(int id, JsonPatchDocument<CityUpdate> data)
         {
             var res = context.Cities.FirstOrDefault(p => p.Id == id);
@@ -101,6 +103,7 @@ namespace sigreh.Controllers
         }
 
         [HttpDelete("{id}")]
+        [Authorize(Roles = Role.ADMIN)]
         public ActionResult Delete(int id)
         {
             var res = context.Cities.FirstOrDefault(p => p.Id == id);

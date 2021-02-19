@@ -11,14 +11,13 @@ namespace sigreh.Data
     {
         public SigrehContext(DbContextOptions<SigrehContext> opt) : base(opt) {}
 
-        public DbSet<City> Cities { get; set;  }
-        public DbSet<Client> Clients { get; set; }
-        public DbSet<Department> Departments { get; set; }
-        public DbSet<District> Districts { get; set; }
-        public DbSet<Establishment> Establishments { get; set; }
-        public DbSet<Region> Regions { get; set; }
-        public DbSet<Subprefecture> Subprefectures { get; set; }
         public DbSet<User> Users { get; set; }
+        public DbSet<Region> Regions { get; set; }
+        public DbSet<Department> Departments { get; set; }
+        public DbSet<City> Cities { get; set;  }
+        public DbSet<Establishment> Establishments { get; set; }
+        public DbSet<Client> Clients { get; set; }
+        public DbSet<Partner> Partners { get; set; }
         
     }
 }
