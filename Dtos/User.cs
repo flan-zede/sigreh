@@ -36,9 +36,10 @@ namespace sigreh.Dtos
         [Required]
         public string Email { get; set; }
 
-        public Boolean Blocked { get; set; }
+        public Boolean Active { get; set; }
 
         public string Role { get; set; }
+
     }
 
     public class UserCreate: UserInfo
@@ -51,13 +52,15 @@ namespace sigreh.Dtos
     {
         public int Id { get; set; }
                 
-        public ICollection<Region> Regions { get; set; }
+        public IList<Region> Regions { get; set; }
 
-        public ICollection<Department> Departments { get; set; }
+        public IList<Department> Departments { get; set; }
 
-        public ICollection<Establishment> Establishments { get; set; }
+        public IList<Establishment> Establishments { get; set; }
 
         public DateTime CreatedAt { get; set; }
+
+        public DateTime UpdatedAt { get; set; }
     }
 
     public class UserUpdate : UserCreate

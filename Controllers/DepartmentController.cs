@@ -32,7 +32,7 @@ namespace sigreh.Controllers
         public ActionResult<List<DepartmentResponse>> Find([FromQuery] QueryParam filter)
         {
             var ctx = from s in context.Departments.Include(p => p.Region) select s;
-            if (filter.Sort == "asc") ctx = ctx.OrderBy(p => p.Id); else ctx = ctx.OrderByDescending(p => p.Id);
+            if (filter.Sort == "asc") ctx = ctx.OrderBy(p => p.Name); else ctx = ctx.OrderByDescending(p => p.Name);
             if (filter.Search != null)
             {
                 string[] keys = filter.Search.Split(" ", StringSplitOptions.RemoveEmptyEntries);

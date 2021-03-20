@@ -3,15 +3,17 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using sigreh.Data;
 
 namespace sigreh.Migrations
 {
     [DbContext(typeof(SigrehContext))]
-    partial class SigrehContextModelSnapshot : ModelSnapshot
+    [Migration("20210318211130_ClientEnterTime")]
+    partial class ClientEnterTime
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -275,11 +277,11 @@ namespace sigreh.Migrations
                         .HasColumnType("int")
                         .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
 
-                    b.Property<bool>("Active")
-                        .HasColumnType("bit");
-
                     b.Property<DateTime>("Birthdate")
                         .HasColumnType("datetime2");
+
+                    b.Property<bool>("Blocked")
+                        .HasColumnType("bit");
 
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime2");

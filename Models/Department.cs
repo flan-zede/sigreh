@@ -19,8 +19,8 @@ namespace sigreh.Models
 
         public Region Region { get; set; }
 
-        public ICollection<City> Cities { get; set; }
-        
-        public ICollection<User> Users { get; set; }
+        public IList<City> Cities { get; set; }
+
+        public IList<User> Users { get; set; }
     }
 }

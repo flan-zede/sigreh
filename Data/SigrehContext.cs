@@ -18,6 +18,5 @@ namespace sigreh.Data
         public DbSet<Establishment> Establishments { get; set; }
         public DbSet<Client> Clients { get; set; }
         public DbSet<Partner> Partners { get; set; }
-        
     }
 }

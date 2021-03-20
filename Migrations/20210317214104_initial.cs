@@ -3,7 +3,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 
 namespace sigreh.Migrations
 {
-    public partial class First : Migration
+    public partial class initial : Migration
     {
         protected override void Up(MigrationBuilder migrationBuilder)
         {
@@ -18,6 +18,33 @@ namespace sigreh.Migrations
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_Regions", x => x.Id);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "Users",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    Name = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    Firstname = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    Birthdate = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    Gender = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    Nationality = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    Idnumber = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    IdnumberNature = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    PhoneType = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    Phone = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    Username = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    Email = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    Password = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    Blocked = table.Column<bool>(type: "bit", nullable: false),
+                    Role = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Users", x => x.Id);
                 });
 
             migrationBuilder.CreateTable(
@@ -36,6 +63,30 @@ namespace sigreh.Migrations
                         name: "FK_Departments_Regions_RegionId",
                         column: x => x.RegionId,
                         principalTable: "Regions",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "RegionUser",
+                columns: table => new
+                {
+                    RegionsId = table.Column<int>(type: "int", nullable: false),
+                    UsersId = table.Column<int>(type: "int", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_RegionUser", x => new { x.RegionsId, x.UsersId });
+                    table.ForeignKey(
+                        name: "FK_RegionUser_Regions_RegionsId",
+                        column: x => x.RegionsId,
+                        principalTable: "Regions",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_RegionUser_Users_UsersId",
+                        column: x => x.UsersId,
+                        principalTable: "Users",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                 });
@@ -61,6 +112,30 @@ namespace sigreh.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "DepartmentUser",
+                columns: table => new
+                {
+                    DepartmentsId = table.Column<int>(type: "int", nullable: false),
+                    UsersId = table.Column<int>(type: "int", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_DepartmentUser", x => new { x.DepartmentsId, x.UsersId });
+                    table.ForeignKey(
+                        name: "FK_DepartmentUser_Departments_DepartmentsId",
+                        column: x => x.DepartmentsId,
+                        principalTable: "Departments",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_DepartmentUser_Users_UsersId",
+                        column: x => x.UsersId,
+                        principalTable: "Users",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "Establishments",
                 columns: table => new
                 {
@@ -81,57 +156,6 @@ namespace sigreh.Migrations
                         principalTable: "Cities",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
-                });
-
-            migrationBuilder.CreateTable(
-                name: "Partners",
-                columns: table => new
-                {
-                    Id = table.Column<int>(type: "int", nullable: false)
-                        .Annotation("SqlServer:Identity", "1, 1"),
-                    Gender = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    name = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    Age = table.Column<int>(type: "int", nullable: false),
-                    UserId = table.Column<int>(type: "int", nullable: false),
-                    ClientId = table.Column<int>(type: "int", nullable: true)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_Partners", x => x.Id);
-                });
-
-            migrationBuilder.CreateTable(
-                name: "Users",
-                columns: table => new
-                {
-                    Id = table.Column<int>(type: "int", nullable: false)
-                        .Annotation("SqlServer:Identity", "1, 1"),
-                    Name = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    Firstname = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    Birthdate = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    Gender = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    Nationality = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    Idnumber = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    IdnumberNature = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    PhoneType = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    Phone = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    Username = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    Email = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    Password = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    Blocked = table.Column<bool>(type: "bit", nullable: false),
-                    Role = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    PartnerId = table.Column<int>(type: "int", nullable: true)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_Users", x => x.Id);
-                    table.ForeignKey(
-                        name: "FK_Users_Partners_PartnerId",
-                        column: x => x.PartnerId,
-                        principalTable: "Partners",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Restrict);
                 });
 
             migrationBuilder.CreateTable(
@@ -177,30 +201,6 @@ namespace sigreh.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "DepartmentUser",
-                columns: table => new
-                {
-                    DepartmentsId = table.Column<int>(type: "int", nullable: false),
-                    UsersId = table.Column<int>(type: "int", nullable: false)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_DepartmentUser", x => new { x.DepartmentsId, x.UsersId });
-                    table.ForeignKey(
-                        name: "FK_DepartmentUser_Departments_DepartmentsId",
-                        column: x => x.DepartmentsId,
-                        principalTable: "Departments",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
-                    table.ForeignKey(
-                        name: "FK_DepartmentUser_Users_UsersId",
-                        column: x => x.UsersId,
-                        principalTable: "Users",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
-                });
-
-            migrationBuilder.CreateTable(
                 name: "EstablishmentUser",
                 columns: table => new
                 {
@@ -225,25 +225,23 @@ namespace sigreh.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "RegionUser",
+                name: "Partners",
                 columns: table => new
                 {
-                    RegionsId = table.Column<int>(type: "int", nullable: false),
-                    UsersId = table.Column<int>(type: "int", nullable: false)
+                    Id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    Gender = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    name = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    Age = table.Column<int>(type: "int", nullable: false),
+                    ClientId = table.Column<int>(type: "int", nullable: false)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_RegionUser", x => new { x.RegionsId, x.UsersId });
+                    table.PrimaryKey("PK_Partners", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_RegionUser_Regions_RegionsId",
-                        column: x => x.RegionsId,
-                        principalTable: "Regions",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
-                    table.ForeignKey(
-                        name: "FK_RegionUser_Users_UsersId",
-                        column: x => x.UsersId,
-                        principalTable: "Users",
+                        name: "FK_Partners_Clients_ClientId",
+                        column: x => x.ClientId,
+                        principalTable: "Clients",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                 });
@@ -292,35 +290,10 @@ namespace sigreh.Migrations
                 name: "IX_RegionUser_UsersId",
                 table: "RegionUser",
                 column: "UsersId");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_Users_PartnerId",
-                table: "Users",
-                column: "PartnerId");
-
-            migrationBuilder.AddForeignKey(
-                name: "FK_Partners_Clients_ClientId",
-                table: "Partners",
-                column: "ClientId",
-                principalTable: "Clients",
-                principalColumn: "Id",
-                onDelete: ReferentialAction.Restrict);
         }
 
         protected override void Down(MigrationBuilder migrationBuilder)
         {
-            migrationBuilder.DropForeignKey(
-                name: "FK_Cities_Departments_DepartmentId",
-                table: "Cities");
-
-            migrationBuilder.DropForeignKey(
-                name: "FK_Clients_Establishments_EstablishmentId",
-                table: "Clients");
-
-            migrationBuilder.DropForeignKey(
-                name: "FK_Clients_Users_UserId",
-                table: "Clients");
-
             migrationBuilder.DropTable(
                 name: "DepartmentUser");
 
@@ -328,28 +301,28 @@ namespace sigreh.Migrations
                 name: "EstablishmentUser");
 
             migrationBuilder.DropTable(
+                name: "Partners");
+
+            migrationBuilder.DropTable(
                 name: "RegionUser");
+
+            migrationBuilder.DropTable(
+                name: "Clients");
+
+            migrationBuilder.DropTable(
+                name: "Establishments");
+
+            migrationBuilder.DropTable(
+                name: "Users");
+
+            migrationBuilder.DropTable(
+                name: "Cities");
 
             migrationBuilder.DropTable(
                 name: "Departments");
 
             migrationBuilder.DropTable(
                 name: "Regions");
-
-            migrationBuilder.DropTable(
-                name: "Establishments");
-
-            migrationBuilder.DropTable(
-                name: "Cities");
-
-            migrationBuilder.DropTable(
-                name: "Users");
-
-            migrationBuilder.DropTable(
-                name: "Partners");
-
-            migrationBuilder.DropTable(
-                name: "Clients");
         }
     }
 }

@@ -13,8 +13,8 @@ namespace sigreh.Dtos
 
         public string Name { get; set; }
 
-        public ICollection<Department> Departments { get; set; }
+        public IList<Department> Departments { get; set; }
 
-        public ICollection<User> Users { get; set; }
+        public IList<User> Users { get; set; }
     }
 }

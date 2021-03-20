@@ -18,7 +18,7 @@ namespace sigreh.Controllers
 {
     [Route("partner")]
     [ApiController]
-    [Authorize(Roles = Role.ADMIN)]
+    [Authorize]
     public class PartnerController : ControllerBase
     {
         private readonly SigrehContext context;
@@ -37,6 +37,16 @@ namespace sigreh.Controllers
             context.Partners.Add(item);
             context.SaveChanges();
             return Ok(mapper.Map<PartnerResponse>(item));
+        }
+
+        [HttpDelete("{id}")]
+        public ActionResult Delete(int id)
+        {
+            var res = context.Partners.FirstOrDefault(p => p.Id == id);
+            if (res == null) return NotFound();
+            context.Partners.Remove(res);
+            context.SaveChanges();
+            return NoContent();
         }
     }
 

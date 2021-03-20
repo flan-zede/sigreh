@@ -53,6 +53,9 @@ namespace sigreh.Dtos
 
         [Required]
         public DateTime EnterDate { get; set; }
+        
+        [Required]
+        public string EnterTime { get; set; }
 
         [Required]
         public int EstablishmentId { get; set; }
@@ -67,11 +70,13 @@ namespace sigreh.Dtos
 
         public DateTime CreatedAt { get; set; }
 
+        public DateTime UpdatedAt { get; set; }
+
         public Establishment Establishment { get; set; }
         
         public User User { get; set; }
         
-        public ICollection<Partner> Partners { get; set; }
+        public IList<Partner> Partners { get; set; }
         
     }
 

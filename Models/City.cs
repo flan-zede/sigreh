@@ -19,6 +19,6 @@ namespace sigreh.Models
 
         public Department Department { get; set; }
 
-        public ICollection<Establishment> Establishments { get; set; }
+        public IList<Establishment> Establishments { get; set; }
     }
 }

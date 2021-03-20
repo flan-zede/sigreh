@@ -17,11 +17,13 @@ namespace sigreh.Dtos
         public int Age { get; set; }
         
         [Required]
-        public int UserId { get; set; }
+        public int ClientId { get; set; }
     }
 
     public class PartnerResponse : PartnerCreate
     {
         public int Id { get; set; }
+
+        public IList<Client> Client { get; set; }
     }
 }

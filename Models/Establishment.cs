@@ -25,8 +25,8 @@ namespace sigreh.Models
         public int CityId { get; set; }
 
         public City City { get; set; }
-        
-        public ICollection<User> Users { get; set; }
-        
+
+        public IList<User> Users { get; set; }
+
     }
 }

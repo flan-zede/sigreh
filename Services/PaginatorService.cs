@@ -1,14 +1,13 @@
-﻿using sigreh.Wrappers;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using sigreh.Wrappers;
 
 namespace sigreh.Services
 {
     public class PaginatorService
     {
-
         public static PageResponse<List<T>> Paginate<T>(List<T> data, int total, Page page)
         {
             var result = new PageResponse<List<T>>();

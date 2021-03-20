@@ -10,7 +10,7 @@
       "applicationUrl": "http://0.0.0.0:61563",
       "sslPort": 44359
     }
-  },  
+  },
   "$schema": "http://json.schemastore.org/launchsettings.json",
   "profiles": {
     "IIS Express": {
@@ -21,13 +21,14 @@
       "nativeDebugging": true
     },
     "sigreh": {
-      "commandName": "Project",
+      "commandName": "IIS",
       "launchBrowser": true,
       "launchUrl": "swagger",
       "environmentVariables": {
         "ASPNETCORE_ENVIRONMENT": "Development"
       },
       "dotnetRunMessages": "true",
+      "nativeDebugging": true,
       "applicationUrl": "https://0.0.0.0:5001;http://0.0.0.0:5000"
     }
   }

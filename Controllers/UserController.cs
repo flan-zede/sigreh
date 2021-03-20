@@ -1,18 +1,18 @@
-﻿using Microsoft.AspNetCore.Mvc;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using sigreh.Models;
-using sigreh.Data;
-using AutoMapper;
-using sigreh.Dtos;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.JsonPatch;
-using Microsoft.Extensions.Configuration;
 using Microsoft.AspNetCore.Authorization;
-using sigreh.Wrappers;
-using sigreh.Services;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
+using AutoMapper;
+using sigreh.Data;
+using sigreh.Dtos;
+using sigreh.Models;
+using sigreh.Services;
+using sigreh.Wrappers;
 
 namespace sigreh.Controllers
 {
@@ -91,6 +91,7 @@ namespace sigreh.Controllers
             if (res == null) return NotFound();
             data.Password = BCrypt.Net.BCrypt.HashPassword(data.Password);
             mapper.Map(data, res);
+            res.UpdatedAt = DateTime.UtcNow.Date;
             context.Users.Update(res);
             context.SaveChanges();
             return NoContent();
@@ -106,6 +107,7 @@ namespace sigreh.Controllers
             data.ApplyTo(item, ModelState);
             if(!TryValidateModel(item)) return ValidationProblem(ModelState);
             mapper.Map(item, res);
+            res.UpdatedAt = DateTime.UtcNow.Date;
             context.Users.Update(res);
             context.SaveChanges();
             return NoContent();
@@ -128,7 +130,7 @@ namespace sigreh.Controllers
         {
             var item = mapper.Map<Login>(data);
             if (item == null) throw new ArgumentNullException(nameof(item));
-            var res = context.Users.FirstOrDefault(p => p.Username == item.Username);
+            var res = context.Users.Include(p => p.Regions).Include(p => p.Departments).Include(p => p.Establishments).FirstOrDefault(p => p.Username == item.Username);
             if (res != null && BCrypt.Net.BCrypt.Verify(item.Password, res.Password))
             {
                 var Jwt = JwtService.CreateJwt(res);
@@ -143,47 +145,54 @@ namespace sigreh.Controllers
         public ActionResult<UserResponse> Me()
         {
             var userId = int.Parse(User.Identity.Name);
-            var res = context.Users.FirstOrDefault(p => p.Id == userId);
+            var res = context.Users.Include(p => p.Regions).Include(p => p.Departments).Include(p => p.Establishments).FirstOrDefault(p => p.Id == userId);
             if (res != null) return Ok(mapper.Map<UserResponse>(res));
-            return Unauthorized();
+            return NotFound(new { message = "Unknowed user" });
         }
 
-        [HttpPost(), Route("relation")]
+        [HttpPost(), Route("{id}/relate")]
         [Authorize(Roles = Role.ADMIN)]
-        public ActionResult PostRelation(Relation body)
+        public ActionResult PostRelationship(int id, Relationship body)
         {
-            var user = context.Users.FirstOrDefault(p => p.Id == body.Id);
-            if (user == null) return NotFound();
-            switch (body.Path)
+            var user = context.Users.Include(p => p.Regions).Include(p => p.Departments).Include(p => p.Establishments).FirstOrDefault(p => p.Id == id);
+            if (user == null) return NotFound(new { message = "Unknow user" });
+            switch (body.Table)
             {
                 case "region":
                     {
-                        var related = context.Regions.FirstOrDefault(p => p.Id == body.RelatedId);
-                        if (related == null) return NotFound();
-                        if (body.Action == "add") user.Regions.Add(related);
-                        else user.Regions.Remove(related);
+                        var res = context.Regions.FirstOrDefault(p => p.Id == body.Id);
+                        if (res == null) return NotFound(new { message = "Unknow region" });
+                        try{
+                            if(body.Add == true) user.Regions.Add(res);
+                            else user.Regions.Remove(res);
+                        }
+                        catch(Exception e){}
                     }
                     break;
                 case "department":
                     {
-                        var related = context.Departments.FirstOrDefault(p => p.Id == body.RelatedId);
-                        if (related == null) return NotFound();
-                        if (body.Action == "add") user.Departments.Add(related);
-                        else user.Departments.Remove(related);
+                        var res = context.Departments.FirstOrDefault(p => p.Id == body.Id);
+                        if (res == null) return NotFound(new { message = "Unknow department" });
+                        try{
+                            if(body.Add == true) user.Departments.Add(res);
+                            else user.Departments.Remove(res);
+                        }
+                        catch(Exception e){}
                     }
                     break;
                 case "establishment":
                     {
-                        var related = context.Establishments.FirstOrDefault(p => p.Id == body.RelatedId);
-                        if (related == null) return NotFound();
-                        if (body.Action == "add") user.Establishments.Add(related);
-                        else user.Establishments.Remove(related);
+                        var res = context.Establishments.FirstOrDefault(p => p.Id == body.Id);
+                        if (res == null) return NotFound(new { message = "Unknow establishment" });
+                        try{
+                            if(body.Add == true) user.Establishments.Add(res);
+                            else user.Establishments.Remove(res);
+                        }
+                        catch(Exception e){}
                     }
                     break;
-                default:
-                    break;
+                default: break;
             }
-            context.Users.Update(user);
             context.SaveChanges();
             return NoContent();
         }

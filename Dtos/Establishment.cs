@@ -30,7 +30,7 @@ namespace sigreh.Dtos
 
         public City City { get; set; }
         
-        public ICollection<User> Users { get; set; }
+        public IList<User> Users { get; set; }
     }
 
     public class EstablishmentUpdate : EstablishmentCreate

@@ -10,16 +10,16 @@ using sigreh.Data;
 namespace sigreh.Migrations
 {
     [DbContext(typeof(SigrehContext))]
-    [Migration("20210218061732_First")]
-    partial class First
+    [Migration("20210317214104_initial")]
+    partial class initial
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .UseIdentityColumns()
                 .HasAnnotation("Relational:MaxIdentifierLength", 128)
-                .HasAnnotation("ProductVersion", "5.0.2");
+                .HasAnnotation("ProductVersion", "5.0.4")
+                .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
 
             modelBuilder.Entity("DepartmentUser", b =>
                 {
@@ -71,7 +71,7 @@ namespace sigreh.Migrations
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("int")
-                        .UseIdentityColumn();
+                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
 
                     b.Property<int>("DepartmentId")
                         .HasColumnType("int");
@@ -92,7 +92,7 @@ namespace sigreh.Migrations
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("int")
-                        .UseIdentityColumn();
+                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
 
                     b.Property<string>("BedroomNumber")
                         .IsRequired()
@@ -173,7 +173,7 @@ namespace sigreh.Migrations
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("int")
-                        .UseIdentityColumn();
+                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
 
                     b.Property<string>("Name")
                         .IsRequired()
@@ -194,7 +194,7 @@ namespace sigreh.Migrations
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("int")
-                        .UseIdentityColumn();
+                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
 
                     b.Property<int>("CityId")
                         .HasColumnType("int");
@@ -225,20 +225,17 @@ namespace sigreh.Migrations
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("int")
-                        .UseIdentityColumn();
+                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
 
                     b.Property<int>("Age")
                         .HasColumnType("int");
 
-                    b.Property<int?>("ClientId")
+                    b.Property<int>("ClientId")
                         .HasColumnType("int");
 
                     b.Property<string>("Gender")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
-
-                    b.Property<int>("UserId")
-                        .HasColumnType("int");
 
                     b.Property<string>("name")
                         .HasColumnType("nvarchar(max)");
@@ -255,7 +252,7 @@ namespace sigreh.Migrations
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("int")
-                        .UseIdentityColumn();
+                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
 
                     b.Property<string>("Name")
                         .IsRequired()
@@ -271,7 +268,7 @@ namespace sigreh.Migrations
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("int")
-                        .UseIdentityColumn();
+                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
 
                     b.Property<DateTime>("Birthdate")
                         .HasColumnType("datetime2");
@@ -304,9 +301,6 @@ namespace sigreh.Migrations
                     b.Property<string>("Nationality")
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<int?>("PartnerId")
-                        .HasColumnType("int");
-
                     b.Property<string>("Password")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
@@ -327,8 +321,6 @@ namespace sigreh.Migrations
                         .HasColumnType("nvarchar(max)");
 
                     b.HasKey("Id");
-
-                    b.HasIndex("PartnerId");
 
                     b.ToTable("Users");
                 });
@@ -432,16 +424,13 @@ namespace sigreh.Migrations
 
             modelBuilder.Entity("sigreh.Models.Partner", b =>
                 {
-                    b.HasOne("sigreh.Models.Client", null)
+                    b.HasOne("sigreh.Models.Client", "Client")
                         .WithMany("Partners")
-                        .HasForeignKey("ClientId");
-                });
+                        .HasForeignKey("ClientId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
 
-            modelBuilder.Entity("sigreh.Models.User", b =>
-                {
-                    b.HasOne("sigreh.Models.Partner", null)
-                        .WithMany("User")
-                        .HasForeignKey("PartnerId");
+                    b.Navigation("Client");
                 });
 
             modelBuilder.Entity("sigreh.Models.City", b =>
@@ -457,11 +446,6 @@ namespace sigreh.Migrations
             modelBuilder.Entity("sigreh.Models.Department", b =>
                 {
                     b.Navigation("Cities");
-                });
-
-            modelBuilder.Entity("sigreh.Models.Partner", b =>
-                {
-                    b.Navigation("User");
                 });
 
             modelBuilder.Entity("sigreh.Models.Region", b =>

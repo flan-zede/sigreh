@@ -57,9 +57,14 @@ namespace sigreh.Models
         [Required]
         public DateTime EnterDate { get; set; }
 
+        [Required]
+        public string EnterTime { get; set; }
+
         public DateTime CreatedAt { get; set; }
+
+        public DateTime UpdatedAt { get; set; }
         
-        public ICollection<Partner> Partners { get; set; }
+        public IList<Partner> Partners { get; set; }
         
         public int EstablishmentId { get; set; }
 

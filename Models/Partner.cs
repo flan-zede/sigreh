@@ -20,8 +20,8 @@ namespace sigreh.Models
         public int Age { get; set; }
         
         [Required]
-        public int UserId { get; set; }
+        public int ClientId { get; set; }
 
-        public ICollection<User> User { get; set; }
+        public Client Client { get; set; }
     }
 }
