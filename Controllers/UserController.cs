@@ -2,11 +2,11 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.JsonPatch;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.JsonPatch;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Configuration;
 using AutoMapper;
 using sigreh.Data;
 using sigreh.Dtos;
@@ -21,14 +21,12 @@ namespace sigreh.Controllers
     public class UserController : ControllerBase
     {
         private readonly SigrehContext context;
-        private readonly IConfiguration config;
         private readonly IMapper mapper;
 
-        public UserController(SigrehContext _context, IMapper _mapper, IConfiguration _config) 
+        public UserController(SigrehContext _context, IMapper _mapper) 
         { 
             mapper = _mapper; 
             context = _context;
-            config = _config;
         }
 
         [HttpGet]
@@ -48,7 +46,6 @@ namespace sigreh.Controllers
             }
             return Ok(mapper.Map<List<UserResponse>>(ctx.ToList()));
         }
-
 
         [HttpGet("{id}")]
         [Authorize]
@@ -162,33 +159,21 @@ namespace sigreh.Controllers
                     {
                         var res = context.Regions.FirstOrDefault(p => p.Id == body.Id);
                         if (res == null) return NotFound(new { message = "Unknow region" });
-                        try{
-                            if(body.Add == true) user.Regions.Add(res);
-                            else user.Regions.Remove(res);
-                        }
-                        catch(Exception e){}
+                        if(body.Add == true) user.Regions.Add(res); else user.Regions.Remove(res);
                     }
                     break;
                 case "department":
                     {
                         var res = context.Departments.FirstOrDefault(p => p.Id == body.Id);
                         if (res == null) return NotFound(new { message = "Unknow department" });
-                        try{
-                            if(body.Add == true) user.Departments.Add(res);
-                            else user.Departments.Remove(res);
-                        }
-                        catch(Exception e){}
+                        if(body.Add == true) user.Departments.Add(res); else user.Departments.Remove(res);
                     }
                     break;
                 case "establishment":
                     {
                         var res = context.Establishments.FirstOrDefault(p => p.Id == body.Id);
                         if (res == null) return NotFound(new { message = "Unknow establishment" });
-                        try{
-                            if(body.Add == true) user.Establishments.Add(res);
-                            else user.Establishments.Remove(res);
-                        }
-                        catch(Exception e){}
+                        if(body.Add == true) user.Establishments.Add(res); else user.Establishments.Remove(res);
                     }
                     break;
                 default: break;

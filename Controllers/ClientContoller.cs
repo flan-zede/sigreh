@@ -1,17 +1,18 @@
-﻿using Microsoft.AspNetCore.Mvc;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using sigreh.Models;
-using sigreh.Data;
-using AutoMapper;
-using sigreh.Dtos;
-using Microsoft.AspNetCore.JsonPatch;
 using Microsoft.AspNetCore.Authorization;
-using sigreh.Wrappers;
-using sigreh.Services;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.JsonPatch;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using AutoMapper;
+using sigreh.Data;
+using sigreh.Dtos;
+using sigreh.Models;
+using sigreh.Services;
+using sigreh.Wrappers;
 
 namespace sigreh.Controllers
 {
@@ -32,8 +33,7 @@ namespace sigreh.Controllers
         [Authorize]
         public ActionResult<List<ClientResponse>> Find([FromQuery] QueryParam filter)
         {
-            var user = context.Users.Include(p => p.Regions).Include(p => p.Departments).Include(p => p.Establishments).FirstOrDefault(p => p.Id == int.Parse(User.Identity.Name));
-            var ctx = from s in context.Clients.Include(p => p.Establishment).ThenInclude(p => p.City).Include(p => p.User).Include(p => p.Partners) select s;
+            var ctx = from s in context.Clients.Include(p => p.Establishment).ThenInclude(p => p.City).ThenInclude(p => p.Department).ThenInclude(p => p.Region).Include(p => p.User).Include(p => p.Partners) select s;
             var page = new Page(filter.Index, filter.Size);
             List<int> ids = new List<int>();
 
@@ -47,6 +47,7 @@ namespace sigreh.Controllers
 
             if (User.IsInRole(Role.REH) || User.IsInRole(Role.GEH))
             {
+                var user = context.Users.Include(p => p.Establishments).FirstOrDefault(p => p.Id == int.Parse(User.Identity.Name));
                 if(user.Establishments != null) foreach (var ue in user.Establishments) ids.Add(ue.Id);
                 ctx = ctx.Where(p => ids.Contains(p.EstablishmentId));
                 if (filter.Index > 0) return Ok(PaginatorService.Paginate(mapper.Map<List<REHClientResponse>>(ctx.ToList()), ctx.Count(), page));
@@ -54,6 +55,7 @@ namespace sigreh.Controllers
             }
             else if (User.IsInRole(Role.DDMT) || User.IsInRole(Role.PP))
             {
+                var user = context.Users.Include(p => p.Departments).ThenInclude(p => p.Cities).ThenInclude(p => p.Establishments).FirstOrDefault(p => p.Id == int.Parse(User.Identity.Name));
                 if(user.Departments != null) foreach (var ud in user.Departments) { 
                     foreach (var c in ud.Cities) { 
                         foreach (var e in c.Establishments) { 
@@ -67,6 +69,7 @@ namespace sigreh.Controllers
             }
             else if (User.IsInRole(Role.DRMT))
             {
+                var user = context.Users.Include(p => p.Regions).ThenInclude(p => p.Departments).ThenInclude(p => p.Cities).ThenInclude(p => p.Establishments).FirstOrDefault(p => p.Id == int.Parse(User.Identity.Name));
                 if(user.Regions != null) foreach (var ur in user.Regions) { 
                     foreach (var d in ur.Departments) { 
                         foreach (var cities in d.Cities) { 
@@ -101,55 +104,55 @@ namespace sigreh.Controllers
         [Authorize]
         public ActionResult<ClientResponse> FindOne(int id)
         {
-            var user = context.Users.Include(p => p.Regions).Include(p => p.Departments).Include(p => p.Establishments).FirstOrDefault(p => p.Id == int.Parse(User.Identity.Name));
-            var ctx = from s in context.Clients.Include(p => p.Establishment).ThenInclude(p => p.City).Include(p => p.User).Include(p => p.Partners) select s;
+            var ctx = from s in context.Clients.Include(p => p.Establishment).ThenInclude(p => p.City).ThenInclude(p => p.Department).ThenInclude(p => p.Region).Include(p => p.User).Include(p => p.Partners) select s;
             List<int> ids = new List<int>();
 
             if (User.IsInRole(Role.REH) || User.IsInRole(Role.GEH))
             {
-                if(user.Establishments != null) foreach (var ue in user.Establishments) { 
-                    ids.Add(ue.Id); 
-                }
-                var res = ctx.FirstOrDefault(p => p.Id == id && ids.Contains(p.EstablishmentId));
-                if (res == null) return NotFound();
+                var user = context.Users.Include(p => p.Establishments).FirstOrDefault(p => p.Id == int.Parse(User.Identity.Name));
+                if(user.Establishments != null) foreach (var ue in user.Establishments) ids.Add(ue.Id);
+                var res = ctx.Where(p => ids.Contains(p.EstablishmentId)).FirstOrDefault(p => p.Id == id);
+                if(res == null) return NotFound();
                 return Ok(mapper.Map<REHClientResponse>(res));
             }
             else if (User.IsInRole(Role.DDMT) || User.IsInRole(Role.PP))
             {
+                var user = context.Users.Include(p => p.Departments).ThenInclude(p => p.Cities).ThenInclude(p => p.Establishments).FirstOrDefault(p => p.Id == int.Parse(User.Identity.Name));
                 if(user.Departments != null) foreach (var ud in user.Departments) { 
                     foreach (var c in ud.Cities) { 
                         foreach (var e in c.Establishments) { 
                             ids.Add(e.Id); 
                         } 
-                    } 
+                    }  
                 }
-                var res = ctx.FirstOrDefault(p => p.Id == id && ids.Contains(p.EstablishmentId));
-                if (res == null) return NotFound();
+                var res = ctx.Where(p => ids.Contains(p.EstablishmentId)).FirstOrDefault(p => p.Id == id);
+                if(res == null) return NotFound();
                 return Ok(mapper.Map<DDMTClientResponse>(res));
             }
             else if (User.IsInRole(Role.DRMT))
             {
-                if(user.Regions != null) foreach (var ue in user.Regions) { 
-                    foreach (var d in ue.Departments) { 
-                        foreach (var c in d.Cities) { 
-                            foreach (var e in c.Establishments) { 
+                var user = context.Users.Include(p => p.Regions).ThenInclude(p => p.Departments).ThenInclude(p => p.Cities).ThenInclude(p => p.Establishments).FirstOrDefault(p => p.Id == int.Parse(User.Identity.Name));
+                if(user.Regions != null) foreach (var ur in user.Regions) { 
+                    foreach (var d in ur.Departments) { 
+                        foreach (var cities in d.Cities) { 
+                            foreach (var e in cities.Establishments) { 
                                 ids.Add(e.Id); 
                             } 
                         }  
                     }
                 }
-                var res = ctx.FirstOrDefault(p => p.Id == id && ids.Contains(p.EstablishmentId));
-                if (res == null) return NotFound();
+                var res = ctx.Where(p => ids.Contains(p.EstablishmentId)).FirstOrDefault(p => p.Id == id);
+                if(res == null) return NotFound();
                 return Ok(mapper.Map<DRMTClientResponse>(res));
             }
-            else
-            {
+            else {
                 var res = ctx.FirstOrDefault(p => p.Id == id);
-                if (res == null) return NotFound();
-                if (User.IsInRole(Role.DSMT)) return Ok(mapper.Map<List<DSMTClientResponse>>(res));
-                else if (User.IsInRole(Role.SMI)) return Ok(mapper.Map<List<SMIClientResponse>>(res));
+                if(res == null) return NotFound();
+                if (User.IsInRole(Role.DSMT)) return Ok(mapper.Map<DSMTClientResponse>(res));
+                else if (User.IsInRole(Role.SMI)) return Ok(mapper.Map<SMIClientResponse>(res));
                 else return Ok(mapper.Map<ClientResponse>(res));
             }
+            
         }
 
         [HttpPost]

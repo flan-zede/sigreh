@@ -10,8 +10,8 @@ using sigreh.Data;
 namespace sigreh.Migrations
 {
     [DbContext(typeof(SigrehContext))]
-    [Migration("20210317214104_initial")]
-    partial class initial
+    [Migration("20210321160020_Initial")]
+    partial class Initial
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
@@ -111,6 +111,10 @@ namespace sigreh.Migrations
                     b.Property<DateTime>("EnterDate")
                         .HasColumnType("datetime2");
 
+                    b.Property<string>("EnterTime")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<int>("EstablishmentId")
                         .HasColumnType("int");
 
@@ -155,6 +159,9 @@ namespace sigreh.Migrations
                     b.Property<string>("PhoneType")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime>("UpdatedAt")
+                        .HasColumnType("datetime2");
 
                     b.Property<int>("UserId")
                         .HasColumnType("int");
@@ -270,11 +277,11 @@ namespace sigreh.Migrations
                         .HasColumnType("int")
                         .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
 
+                    b.Property<bool>("Active")
+                        .HasColumnType("bit");
+
                     b.Property<DateTime>("Birthdate")
                         .HasColumnType("datetime2");
-
-                    b.Property<bool>("Blocked")
-                        .HasColumnType("bit");
 
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime2");
@@ -315,6 +322,9 @@ namespace sigreh.Migrations
 
                     b.Property<string>("Role")
                         .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime>("UpdatedAt")
+                        .HasColumnType("datetime2");
 
                     b.Property<string>("Username")
                         .IsRequired()

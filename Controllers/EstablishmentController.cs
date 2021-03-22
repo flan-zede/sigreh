@@ -1,17 +1,18 @@
-﻿using Microsoft.AspNetCore.Mvc;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using sigreh.Models;
-using sigreh.Data;
-using AutoMapper;
-using sigreh.Dtos;
-using Microsoft.AspNetCore.JsonPatch;
 using Microsoft.AspNetCore.Authorization;
-using sigreh.Wrappers;
-using sigreh.Services;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.JsonPatch;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using AutoMapper;
+using sigreh.Data;
+using sigreh.Dtos;
+using sigreh.Models;
+using sigreh.Services;
+using sigreh.Wrappers;
 
 namespace sigreh.Controllers
 {
@@ -31,7 +32,7 @@ namespace sigreh.Controllers
         [Authorize]
         public ActionResult <List<EstablishmentResponse>> Find([FromQuery] QueryParam filter)
         {
-            var ctx = from s in context.Establishments.Include(p => p.City) select s;
+            var ctx = from s in context.Establishments.Include(p => p.City).ThenInclude(p => p.Department).ThenInclude(p => p.Region) select s;
             if (filter.Sort == "asc") ctx = ctx.OrderBy(p => p.Name); else ctx = ctx.OrderByDescending(p => p.Name);
             if (filter.Search != null)
             {
@@ -51,7 +52,7 @@ namespace sigreh.Controllers
         [Authorize]
         public ActionResult<EstablishmentResponse> FindOne(int id)
         {
-            var res = context.Establishments.Include(p => p.City).FirstOrDefault(p => p.Id == id);
+            var res = context.Establishments.Include(p => p.City).ThenInclude(p => p.Department).ThenInclude(p => p.Region).FirstOrDefault(p => p.Id == id);
             if (res != null) return Ok(mapper.Map<EstablishmentResponse>(res));
             return NotFound();
         }
@@ -61,7 +62,7 @@ namespace sigreh.Controllers
         public ActionResult<EstablishmentResponse> FindMultiple(string ids)
         {
             int[] intIds = Array.ConvertAll(ids.Split(",", StringSplitOptions.RemoveEmptyEntries), s => int.Parse(s));
-            var res = context.Establishments.Where(p => intIds.Contains(p.Id)).Include(p => p.City).ToList();
+            var res = context.Establishments.Where(p => intIds.Contains(p.Id)).Include(p => p.City).ThenInclude(p => p.Department).ThenInclude(p => p.Region).ToList();
             if (res != null) return Ok(mapper.Map<EstablishmentResponse>(res));
             return NotFound();
         }
