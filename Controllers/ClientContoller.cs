@@ -29,130 +29,143 @@ namespace sigreh.Controllers
             mapper = _mapper;
         }
 
-        [HttpGet]
+        [HttpGet("establishment/{id}")]
         [Authorize]
-        public ActionResult<List<ClientResponse>> Find([FromQuery] QueryParam filter)
+        public ActionResult<List<ClientResponse>> Find(int id, [FromQuery] QueryParam filter)
         {
-            var ctx = from s in context.Clients.Include(p => p.Establishment).ThenInclude(p => p.City).ThenInclude(p => p.Department).ThenInclude(p => p.Region).Include(p => p.User).Include(p => p.Partners) select s;
+            var establishment = context.Establishments.Include(p => p.City).ThenInclude(p => p.Department).ThenInclude(p => p.Region).FirstOrDefault(p => p.Id == id);
+            if(establishment == null) return NotFound();
+            
+            var res = from s in context.Clients.Include(p => p.Partners).Where(p => p.EstablishmentId == establishment.Id) select s;
             var page = new Page(filter.Index, filter.Size);
             List<int> ids = new List<int>();
 
-            if (filter.Search != null)
-            {
-                string[] keys = filter.Search.Split(" ", StringSplitOptions.RemoveEmptyEntries);
-                ctx = ctx.Where(p => keys.Contains(p.Name) || keys.Contains(p.Firstname) || keys.Contains(p.Idnumber));
-            }
-            if (filter.Sort == "asc") ctx = ctx.OrderBy(p => p.Id); else ctx = ctx.OrderByDescending(p => p.Id);
-            if (filter.Index > 0) ctx = ctx.Skip((page.Index - 1) * page.Size).Take(page.Size);
+            res = res.Skip((page.Index - 1) * page.Size).Take(page.Size);
 
-            if (User.IsInRole(Role.REH) || User.IsInRole(Role.GEH))
+            if (filter.Sort == "asc") 
             {
-                var user = context.Users.Include(p => p.Establishments).FirstOrDefault(p => p.Id == int.Parse(User.Identity.Name));
-                if(user.Establishments != null) foreach (var ue in user.Establishments) ids.Add(ue.Id);
-                ctx = ctx.Where(p => ids.Contains(p.EstablishmentId));
-                if (filter.Index > 0) return Ok(PaginatorService.Paginate(mapper.Map<List<REHClientResponse>>(ctx.ToList()), ctx.Count(), page));
-                return Ok(mapper.Map<List<REHClientResponse>>(ctx.ToList()));
-            }
-            else if (User.IsInRole(Role.DDMT) || User.IsInRole(Role.PP))
-            {
-                var user = context.Users.Include(p => p.Departments).ThenInclude(p => p.Cities).ThenInclude(p => p.Establishments).FirstOrDefault(p => p.Id == int.Parse(User.Identity.Name));
-                if(user.Departments != null) foreach (var ud in user.Departments) { 
-                    foreach (var c in ud.Cities) { 
-                        foreach (var e in c.Establishments) { 
-                            ids.Add(e.Id); 
-                        } 
-                    }  
-                }
-                ctx = ctx.Where(p => ids.Contains(p.EstablishmentId));
-                if (filter.Index > 0) return Ok(PaginatorService.Paginate(mapper.Map<List<DDMTClientResponse>>(ctx.ToList()), ctx.Count(), page));
-                return Ok(mapper.Map<List<DDMTClientResponse>>(ctx.ToList()));
-            }
-            else if (User.IsInRole(Role.DRMT))
-            {
-                var user = context.Users.Include(p => p.Regions).ThenInclude(p => p.Departments).ThenInclude(p => p.Cities).ThenInclude(p => p.Establishments).FirstOrDefault(p => p.Id == int.Parse(User.Identity.Name));
-                if(user.Regions != null) foreach (var ur in user.Regions) { 
-                    foreach (var d in ur.Departments) { 
-                        foreach (var cities in d.Cities) { 
-                            foreach (var e in cities.Establishments) { 
-                                ids.Add(e.Id); 
-                            } 
-                        }  
-                    }
-                }
-                ctx = ctx.Where(p => ids.Contains(p.EstablishmentId));
-                if (filter.Index > 0) return Ok(PaginatorService.Paginate(mapper.Map<List<DRMTClientResponse>>(ctx.ToList()), ctx.Count(), page));
-                return Ok(mapper.Map<List<DRMTClientResponse>>(ctx.ToList()));
-            }
-            else if (User.IsInRole(Role.DSMT))
-            {
-                if (filter.Index > 0) return Ok(PaginatorService.Paginate(mapper.Map<List<DSMTClientResponse>>(ctx.ToList()), ctx.Count(), page));
-                return Ok(mapper.Map<List<DSMTClientResponse>>(ctx.ToList()));
-            }
-            else if (User.IsInRole(Role.SMI))
-            {
-                if (filter.Index > 0) return Ok(PaginatorService.Paginate(mapper.Map<List<SMIClientResponse>>(ctx.ToList()), ctx.Count(), page));
-                return Ok(mapper.Map<List<SMIClientResponse>>(ctx.ToList()));
+                res = res.OrderBy(p => p.Name);
             }
             else
             {
-                if (filter.Index > 0) return Ok(PaginatorService.Paginate(mapper.Map<List<ClientResponse>>(ctx.ToList()), ctx.Count(), page));
-                return Ok(mapper.Map<List<ClientResponse>>(ctx.ToList()));
+                res = res.OrderByDescending(p => p.Name);
             }
+
+            if (filter.Search != null) 
+            {
+                string[] keys = filter.Search.Split(" ", StringSplitOptions.RemoveEmptyEntries);
+                res = res.Where(p => keys.Contains(p.Name) || keys.Contains(p.Firstname) || keys.Contains(p.Idnumber));
+            }
+            
+            if (User.IsInRole(Role.REH) || User.IsInRole(Role.GEH))
+            {
+                var user = context.Users.Include(p => p.Establishments).FirstOrDefault(p => p.Id == int.Parse(User.Identity.Name));
+                if(user.Establishments == null) return NotFound();
+                foreach (var ue in user.Establishments)
+                {
+                    if(ue.Id == establishment.Id)
+                    {
+                        return Ok(PaginatorService.Paginate(mapper.Map<List<REHClientResponse>>(res.ToList()), res.Count(), page));
+                    }
+                }
+            }
+            else if (User.IsInRole(Role.DDMT) || User.IsInRole(Role.PP))
+            {
+                var user = context.Users.Include(p => p.Departments).FirstOrDefault(p => p.Id == int.Parse(User.Identity.Name));
+                if(user.Departments == null) return NotFound();
+                foreach (var ud in user.Departments)
+                {
+                    if (ud.Id == establishment.City.DepartmentId)
+                    {
+                        return Ok(PaginatorService.Paginate(mapper.Map<List<DDMTClientResponse>>(res.ToList()), res.Count(), page));
+                    }
+                }
+            }
+            else if (User.IsInRole(Role.DRMT))
+            {
+                var user = context.Users.Include(p => p.Regions).FirstOrDefault(p => p.Id == int.Parse(User.Identity.Name));
+                if(user.Regions == null) return NotFound();
+                foreach (var ur in user.Regions)
+                { 
+                    if (ur.Id == establishment.City.Department.RegionId)
+                    {
+                        return Ok(PaginatorService.Paginate(mapper.Map<List<DRMTClientResponse>>(res.ToList()), res.Count(), page));
+                    }
+                }
+            }
+            else if (User.IsInRole(Role.DSMT))
+            {
+                return Ok(PaginatorService.Paginate(mapper.Map<List<DSMTClientResponse>>(res.ToList()), res.Count(), page));
+            }
+            else if (User.IsInRole(Role.SMI))
+            {
+                return Ok(PaginatorService.Paginate(mapper.Map<List<SMIClientResponse>>(res.ToList()), res.Count(), page));
+            }
+            else if (User.IsInRole(Role.ADMIN))
+            {
+                return Ok(PaginatorService.Paginate(mapper.Map<List<ClientResponse>>(res.ToList()), res.Count(), page));
+            }
+            
+            return NotFound();
         }
 
         [HttpGet("{id}")]
         [Authorize]
         public ActionResult<ClientResponse> FindOne(int id)
         {
-            var ctx = from s in context.Clients.Include(p => p.Establishment).ThenInclude(p => p.City).ThenInclude(p => p.Department).ThenInclude(p => p.Region).Include(p => p.User).Include(p => p.Partners) select s;
-            List<int> ids = new List<int>();
+            var res = context.Clients.Include(p => p.Partners).Include(p => p.Establishment).ThenInclude(p => p.City).ThenInclude(p => p.Department).ThenInclude(p => p.Region).FirstOrDefault(p => p.Id == id);
+            if(res == null) return NotFound();
 
             if (User.IsInRole(Role.REH) || User.IsInRole(Role.GEH))
             {
                 var user = context.Users.Include(p => p.Establishments).FirstOrDefault(p => p.Id == int.Parse(User.Identity.Name));
-                if(user.Establishments != null) foreach (var ue in user.Establishments) ids.Add(ue.Id);
-                var res = ctx.Where(p => ids.Contains(p.EstablishmentId)).FirstOrDefault(p => p.Id == id);
-                if(res == null) return NotFound();
-                return Ok(mapper.Map<REHClientResponse>(res));
+                if(user.Establishments == null) return NotFound();
+                foreach (var ue in user.Establishments)
+                {
+                    if(ue.Id == res.EstablishmentId)
+                    {
+                        return Ok(mapper.Map<REHClientResponse>(res));
+                    }
+                }
             }
             else if (User.IsInRole(Role.DDMT) || User.IsInRole(Role.PP))
             {
-                var user = context.Users.Include(p => p.Departments).ThenInclude(p => p.Cities).ThenInclude(p => p.Establishments).FirstOrDefault(p => p.Id == int.Parse(User.Identity.Name));
-                if(user.Departments != null) foreach (var ud in user.Departments) { 
-                    foreach (var c in ud.Cities) { 
-                        foreach (var e in c.Establishments) { 
-                            ids.Add(e.Id); 
-                        } 
-                    }  
+                var user = context.Users.Include(p => p.Departments).FirstOrDefault(p => p.Id == int.Parse(User.Identity.Name));
+                if(user.Departments == null) return NotFound();
+                foreach (var ud in user.Departments)
+                {
+                    if (ud.Id == res.Establishment.City.DepartmentId)
+                    {
+                        return Ok(mapper.Map<DDMTClientResponse>(res));
+                    }
                 }
-                var res = ctx.Where(p => ids.Contains(p.EstablishmentId)).FirstOrDefault(p => p.Id == id);
-                if(res == null) return NotFound();
-                return Ok(mapper.Map<DDMTClientResponse>(res));
             }
             else if (User.IsInRole(Role.DRMT))
             {
-                var user = context.Users.Include(p => p.Regions).ThenInclude(p => p.Departments).ThenInclude(p => p.Cities).ThenInclude(p => p.Establishments).FirstOrDefault(p => p.Id == int.Parse(User.Identity.Name));
-                if(user.Regions != null) foreach (var ur in user.Regions) { 
-                    foreach (var d in ur.Departments) { 
-                        foreach (var cities in d.Cities) { 
-                            foreach (var e in cities.Establishments) { 
-                                ids.Add(e.Id); 
-                            } 
-                        }  
+                var user = context.Users.Include(p => p.Regions).FirstOrDefault(p => p.Id == int.Parse(User.Identity.Name));
+                if(user.Regions == null) return NotFound();
+                foreach (var ur in user.Regions)
+                { 
+                    if (ur.Id == res.Establishment.City.Department.RegionId)
+                    {
+                        return Ok(mapper.Map<DRMTClientResponse>(res));
                     }
                 }
-                var res = ctx.Where(p => ids.Contains(p.EstablishmentId)).FirstOrDefault(p => p.Id == id);
-                if(res == null) return NotFound();
-                return Ok(mapper.Map<DRMTClientResponse>(res));
             }
-            else {
-                var res = ctx.FirstOrDefault(p => p.Id == id);
-                if(res == null) return NotFound();
-                if (User.IsInRole(Role.DSMT)) return Ok(mapper.Map<DSMTClientResponse>(res));
-                else if (User.IsInRole(Role.SMI)) return Ok(mapper.Map<SMIClientResponse>(res));
-                else return Ok(mapper.Map<ClientResponse>(res));
+            else if (User.IsInRole(Role.DSMT))
+            {
+                return Ok(mapper.Map<DSMTClientResponse>(res));
             }
-            
+            else if (User.IsInRole(Role.SMI))
+            {
+                return Ok(mapper.Map<SMIClientResponse>(res));
+            }
+            else if (User.IsInRole(Role.ADMIN))
+            {
+                return Ok(mapper.Map<ClientResponse>(res));
+            }
+
+            return NotFound();
         }
 
         [HttpPost]

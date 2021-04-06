@@ -31,37 +31,60 @@ namespace sigreh.Controllers
         [HttpGet]
         public ActionResult<List<CityResponse>> Find([FromQuery] QueryParam filter)
         {
-            var ctx = from s in context.Cities.Include(p => p.Department).ThenInclude(p => p.Region) select s;
-            if (filter.Sort == "asc") ctx = ctx.OrderBy(p => p.Name); else ctx = ctx.OrderByDescending(p => p.Name);
-            if (filter.Search != null)
+            var res = from s in context.Cities.Include(p => p.Department) select s; 
+            var page = new Page(filter.Index, filter.Size);
+
+            res = res.Skip((page.Index - 1) * page.Size).Take(page.Size);
+
+            if (filter.Sort == "asc") 
+            {
+                res = res.OrderBy(p => p.Name);
+            }
+            else
+            {
+                res = res.OrderByDescending(p => p.Name);
+            }
+
+            if (filter.Search != null) 
             {
                 string[] keys = filter.Search.Split(" ", StringSplitOptions.RemoveEmptyEntries);
-                ctx = ctx.Where(p => keys.Contains(p.Name));
+                res = res.Where(p => keys.Contains(p.Name));
             }
-            if (filter.Index > 0)
+
+            return Ok(PaginatorService.Paginate(mapper.Map<List<CityResponse>>(res.ToList()), res.Count(), page));
+        }
+
+        [HttpGet("all")]
+        public ActionResult<List<CityResponse>> Find([FromQuery] string sort)
+        {
+            var res = from s in context.Cities select s; 
+
+            if (sort == "asc") 
             {
-                var page = new Page(filter.Index, filter.Size);
-                ctx = ctx.Skip((page.Index - 1) * page.Size).Take(page.Size);
-                return Ok(PaginatorService.Paginate(mapper.Map<List<CityResponse>>(ctx.ToList()), ctx.Count(), page));
+                res = res.OrderBy(p => p.Name);
             }
-            return Ok(mapper.Map<List<CityResponse>>(ctx.ToList()));
+            else
+            {
+                res = res.OrderByDescending(p => p.Name);
+            }
+
+            return Ok(mapper.Map<List<CityResponse>>(res.ToList()));
         }
 
         [HttpGet("{id}")]
         public ActionResult<CityResponse> FindOne(int id)
         {
-            var res = context.Cities.Include(p => p.Department).ThenInclude(p => p.Region).FirstOrDefault(p => p.Id == id);
-            if (res != null) return Ok(mapper.Map<CityResponse>(res));
-            return NotFound();
+            var res = context.Cities.Include(p => p.Department).Include(p => p.Establishments).FirstOrDefault(p => p.Id == id);
+            if (res == null) return NotFound();
+            return Ok(mapper.Map<CityResponse>(res));
         }
 
-        [HttpGet("multiple/{ids}")]
-        public ActionResult<CityResponse> FindMultiple(string ids)
+        [HttpGet("department/{id}")]
+        public ActionResult<CityResponse> FindByDepartment(int id)
         {
-            int[] intIds = Array.ConvertAll(ids.Split(",", StringSplitOptions.RemoveEmptyEntries), s => int.Parse(s));
-            var res = context.Cities.Where(p => intIds.Contains(p.Id)).Include(p => p.Department).ThenInclude(p => p.Region).ToList();
-            if (res != null) return Ok(mapper.Map<CityResponse>(res));
-            return NotFound();
+            var res = context.Cities.Where(p => p.DepartmentId == id).OrderBy(p => p.Name).ToList();
+            if (res == null) return NotFound();
+            return Ok(mapper.Map<List<CityResponse>>(res));
         }
 
         [HttpPost]

@@ -33,18 +33,45 @@ namespace sigreh.Controllers
         [Authorize(Roles = Role.ADMIN)]
         public ActionResult <List<UserResponse>> Find([FromQuery] QueryParam filter)
         {
-            var ctx = from s in context.Users.Include(p => p.Regions).Include(p => p.Departments).Include(p => p.Establishments) select s;
-            if (filter.Search != null) {
+            var res = from s in context.Users.Include(p => p.Regions).Include(p => p.Departments).Include(p => p.Establishments) select s;
+            var page = new Page(filter.Index, filter.Size);
+
+            res = res.Skip((page.Index - 1) * page.Size).Take(page.Size);
+                
+            if (filter.Sort == "asc")
+            {
+                res = res.OrderBy(p => p.Id);
+            }
+            else
+            {
+                res = res.OrderByDescending(p => p.Id);
+            }
+
+            if (filter.Search != null)
+            {
                 string[] keys = filter.Search.Split(" ", StringSplitOptions.RemoveEmptyEntries);
-                ctx = ctx.Where(p => keys.Contains(p.Name) || keys.Contains(p.Firstname) || keys.Contains(p.Email) || keys.Contains(p.Idnumber));
+                res = res.Where(p => keys.Contains(p.Name) || keys.Contains(p.Firstname) || keys.Contains(p.Email) || keys.Contains(p.Idnumber));
             }
-            if (filter.Sort == "asc") ctx = ctx.OrderBy(p => p.Id); else ctx = ctx.OrderByDescending(p => p.Id);
-            if (filter.Index > 0) {
-                var page = new Page(filter.Index, filter.Size);
-                ctx = ctx.Skip((page.Index - 1) * page.Size).Take(page.Size);
-                return Ok(PaginatorService.Paginate(mapper.Map<List<UserResponse>>(ctx.ToList()), ctx.Count(), page));
+
+            return Ok(PaginatorService.Paginate(mapper.Map<List<UserResponse>>(res.ToList()), res.Count(), page));
+        }
+
+        [HttpGet("all")]
+        [Authorize(Roles = Role.ADMIN)]
+        public ActionResult <List<UserResponse>> FindAll([FromQuery] string sort)
+        {
+            var res = from s in context.Users.Include(p => p.Regions).Include(p => p.Departments).Include(p => p.Establishments) select s;
+  
+            if (sort == "asc")
+            {
+                res = res.OrderBy(p => p.Id);
             }
-            return Ok(mapper.Map<List<UserResponse>>(ctx.ToList()));
+            else
+            {
+                res = res.OrderByDescending(p => p.Id);
+            }
+
+            return Ok(mapper.Map<List<UserResponse>>(res.ToList()));
         }
 
         [HttpGet("{id}")]
@@ -56,15 +83,6 @@ namespace sigreh.Controllers
             var res = context.Users.Include(p => p.Regions).Include(p => p.Departments).Include(p => p.Establishments).FirstOrDefault(p => p.Id == id);
             if (res == null) return NotFound();
             return Ok(mapper.Map<UserResponse>(res));
-        }
-
-        [HttpGet("multiple/{ids}")]
-        [Authorize(Roles = Role.ADMIN)]
-        public ActionResult<UserResponse> FindMultiple(string ids)
-        {
-            int[] intIds = Array.ConvertAll(ids.Split(",", StringSplitOptions.RemoveEmptyEntries), s => int.Parse(s));
-            var res = context.Users.Where(p => intIds.Contains(p.Id)).Include(p => p.Regions).Include(p => p.Departments).Include(p => p.Establishments).ToList();
-            return Ok(mapper.Map<List<UserResponse>>(res));
         }
 
         [HttpPost]

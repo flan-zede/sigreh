@@ -1,9 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.JsonPatch;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -32,39 +30,62 @@ namespace sigreh.Controllers
         [Authorize]
         public ActionResult <List<EstablishmentResponse>> Find([FromQuery] QueryParam filter)
         {
-            var ctx = from s in context.Establishments.Include(p => p.City).ThenInclude(p => p.Department).ThenInclude(p => p.Region) select s;
-            if (filter.Sort == "asc") ctx = ctx.OrderBy(p => p.Name); else ctx = ctx.OrderByDescending(p => p.Name);
-            if (filter.Search != null)
+            var res = from s in context.Establishments.Include(p => p.City) select s;
+            var page = new Page(filter.Index, filter.Size);
+
+            res = res.Skip((page.Index - 1) * page.Size).Take(page.Size);
+
+            if (filter.Sort == "asc") 
+            {
+                res = res.OrderBy(p => p.Name);
+            }
+            else
+            {
+                res = res.OrderByDescending(p => p.Name);
+            }
+
+            if (filter.Search != null) 
             {
                 string[] keys = filter.Search.Split(" ", StringSplitOptions.RemoveEmptyEntries);
-                ctx = ctx.Where(p => keys.Contains(p.Name));
+                res = res.Where(p => keys.Contains(p.Name));
             }
-            if (filter.Index > 0)
+
+            return Ok(PaginatorService.Paginate(mapper.Map<List<EstablishmentResponse>>(res.ToList()), res.Count(), page));
+        }
+
+        [HttpGet("all")]
+        [Authorize]
+        public ActionResult <List<EstablishmentResponse>> Find([FromQuery] string sort)
+        {
+            var res = from s in context.Establishments select s;
+
+            if (sort == "asc") 
             {
-                var page = new Page(filter.Index, filter.Size);
-                ctx = ctx.Skip((page.Index - 1) * page.Size).Take(page.Size);
-                return Ok(PaginatorService.Paginate(mapper.Map<List<EstablishmentResponse>>(ctx.ToList()), ctx.Count(), page));
+                res = res.OrderBy(p => p.Name);
             }
-            return Ok(mapper.Map<List<EstablishmentResponse>>(ctx.ToList()));
+            else
+            {
+                res = res.OrderByDescending(p => p.Name);
+            }
+
+            return Ok(mapper.Map<List<EstablishmentResponse>>(res.ToList()));
         }
 
         [HttpGet("{id}")]
         [Authorize]
         public ActionResult<EstablishmentResponse> FindOne(int id)
         {
-            var res = context.Establishments.Include(p => p.City).ThenInclude(p => p.Department).ThenInclude(p => p.Region).FirstOrDefault(p => p.Id == id);
-            if (res != null) return Ok(mapper.Map<EstablishmentResponse>(res));
-            return NotFound();
+            var res = context.Establishments.Include(p => p.City).FirstOrDefault(p => p.Id == id);
+            if (res == null) return NotFound();
+            return Ok(mapper.Map<EstablishmentResponse>(res));
         }
 
-        [HttpGet("multiple/{ids}")]
-        [Authorize]
-        public ActionResult<EstablishmentResponse> FindMultiple(string ids)
+        [HttpGet("city/{id}")]
+        public ActionResult<EstablishmentResponse> FindByCity(int id)
         {
-            int[] intIds = Array.ConvertAll(ids.Split(",", StringSplitOptions.RemoveEmptyEntries), s => int.Parse(s));
-            var res = context.Establishments.Where(p => intIds.Contains(p.Id)).Include(p => p.City).ThenInclude(p => p.Department).ThenInclude(p => p.Region).ToList();
-            if (res != null) return Ok(mapper.Map<EstablishmentResponse>(res));
-            return NotFound();
+            var res = context.Establishments.Where(p => p.CityId == id).OrderBy(p => p.Name).ToList();
+            if (res == null) return NotFound();
+            return Ok(mapper.Map<List<EstablishmentResponse>>(res));
         }
 
         [HttpPost]
