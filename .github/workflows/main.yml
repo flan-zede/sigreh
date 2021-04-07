@@ -30,7 +30,7 @@ jobs:
       uses: actions/upload-artifact@v2  
       with:  
         name: ${{ env.GITHUB_REF_SLUG }}-${{ github.run_id }}-${{ github.run_number }}  
-        path: ./obj/Debug/net5.0
+        path: ./publishoutput
 
   deploy:
     runs-on: ubuntu-latest
