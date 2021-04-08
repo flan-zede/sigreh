@@ -40,16 +40,11 @@ jobs:
         uses: actions/download-artifact@v1
         with:
           name: ${{ env.GITHUB_REF_SLUG }}-${{ github.run_id }}-${{ github.run_number }}
-      - name: Deploy to Netlify  
-        uses: nwtgck/actions-netlify@v1.1  
-        with:  
-          publish-dir: ${{ env.GITHUB_REF_SLUG }}-${{ github.run_id }}-${{ github.run_number }} 
-          production-branch: master  
-          github-token: ${{ secrets.GITHUB_TOKEN }}  
-          deploy-message: "Deploy from GitHub Actions"  
-          enable-pull-request-comment: true  
-          enable-commit-comment: true  
-          overwrites-pull-request-comment: true  
-        env:  
-          NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}  
-          NETLIFY_SITE_ID: ${{ secrets.NETLIFY_SITE_ID }}
+      - name: Publish to Netlify
+        uses: netlify/actions/cli@master
+        env:
+            NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}
+            NETLIFY_SITE_ID: ${{ secrets.NETLIFY_SITE_ID }}
+        with:
+            args: deploy --dir=${{ env.GITHUB_REF_SLUG }}-${{ github.run_id }}-${{ github.run_number }}/wwwroot --prod
+            secrets: '["NETLIFY_AUTH_TOKEN", "NETLIFY_SITE_ID"]'
