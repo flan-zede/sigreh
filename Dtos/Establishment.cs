@@ -1,9 +1,6 @@
 ﻿using sigreh.Models;
-using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
-using System.Linq;
-using System.Threading.Tasks;
 
 namespace sigreh.Dtos
 {
@@ -11,12 +8,12 @@ namespace sigreh.Dtos
     {
         [Required]
         public string Name { get; set; }
-        
+
         [Required]
         public string Nature { get; set; }
 
         public string Municipality { get; set; }
-        
+
         public string Street { get; set; }
 
         public string Location { get; set; }
@@ -29,7 +26,7 @@ namespace sigreh.Dtos
         public int Id { get; set; }
 
         public City City { get; set; }
-        
+
         public IList<User> Users { get; set; }
     }
 

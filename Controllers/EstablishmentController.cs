@@ -21,21 +21,22 @@ namespace sigreh.Controllers
         private readonly SigrehContext context;
         private readonly IMapper mapper;
 
-        public EstablishmentController(SigrehContext _context, IMapper _mapper) { 
-            mapper = _mapper; 
-            context = _context; 
+        public EstablishmentController(SigrehContext _context, IMapper _mapper)
+        {
+            mapper = _mapper;
+            context = _context;
         }
 
         [HttpGet]
         [Authorize]
-        public ActionResult <List<EstablishmentResponse>> Find([FromQuery] QueryParam filter)
+        public ActionResult<List<EstablishmentResponse>> Find([FromQuery] QueryParam filter)
         {
             var res = from s in context.Establishments.Include(p => p.City) select s;
             var page = new Page(filter.Index, filter.Size);
 
             res = res.Skip((page.Index - 1) * page.Size).Take(page.Size);
 
-            if (filter.Sort == "asc") 
+            if (filter.Sort == "asc")
             {
                 res = res.OrderBy(p => p.Name);
             }
@@ -44,7 +45,7 @@ namespace sigreh.Controllers
                 res = res.OrderByDescending(p => p.Name);
             }
 
-            if (filter.Search != null) 
+            if (filter.Search != null)
             {
                 string[] keys = filter.Search.Split(" ", StringSplitOptions.RemoveEmptyEntries);
                 res = res.Where(p => keys.Contains(p.Name));
@@ -55,11 +56,11 @@ namespace sigreh.Controllers
 
         [HttpGet("all")]
         [Authorize]
-        public ActionResult <List<EstablishmentResponse>> Find([FromQuery] string sort)
+        public ActionResult<List<EstablishmentResponse>> Find([FromQuery] string sort)
         {
             var res = from s in context.Establishments select s;
 
-            if (sort == "asc") 
+            if (sort == "asc")
             {
                 res = res.OrderBy(p => p.Name);
             }
@@ -90,7 +91,7 @@ namespace sigreh.Controllers
 
         [HttpPost]
         [Authorize(Roles = Role.ADMIN)]
-        public ActionResult <EstablishmentResponse> Create(EstablishmentCreate data)
+        public ActionResult<EstablishmentResponse> Create(EstablishmentCreate data)
         {
             var item = mapper.Map<Establishment>(data);
             if (item == null) throw new ArgumentNullException(nameof(item));
@@ -119,7 +120,7 @@ namespace sigreh.Controllers
             if (res == null) return NotFound();
             var item = mapper.Map<EstablishmentUpdate>(res);
             data.ApplyTo(item, ModelState);
-            if(!TryValidateModel(item)) return ValidationProblem(ModelState);
+            if (!TryValidateModel(item)) return ValidationProblem(ModelState);
             mapper.Map(item, res);
             context.Establishments.Update(res);
             context.SaveChanges();

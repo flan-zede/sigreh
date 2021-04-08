@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations;
-using System.ComponentModel.DataAnnotations.Schema;
-using System.Linq;
-using System.Threading.Tasks;
+﻿using System.ComponentModel.DataAnnotations;
 
 namespace sigreh.Models
 {
@@ -18,7 +13,7 @@ namespace sigreh.Models
         public string name { get; set; }
 
         public int Age { get; set; }
-        
+
         [Required]
         public int ClientId { get; set; }
 

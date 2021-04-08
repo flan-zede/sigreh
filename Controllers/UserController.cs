@@ -1,9 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.JsonPatch;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -23,21 +21,21 @@ namespace sigreh.Controllers
         private readonly SigrehContext context;
         private readonly IMapper mapper;
 
-        public UserController(SigrehContext _context, IMapper _mapper) 
-        { 
-            mapper = _mapper; 
+        public UserController(SigrehContext _context, IMapper _mapper)
+        {
+            mapper = _mapper;
             context = _context;
         }
 
         [HttpGet]
         [Authorize(Roles = Role.ADMIN)]
-        public ActionResult <List<UserResponse>> Find([FromQuery] QueryParam filter)
+        public ActionResult<List<UserResponse>> Find([FromQuery] QueryParam filter)
         {
             var res = from s in context.Users.Include(p => p.Regions).Include(p => p.Departments).Include(p => p.Establishments) select s;
             var page = new Page(filter.Index, filter.Size);
 
             res = res.Skip((page.Index - 1) * page.Size).Take(page.Size);
-                
+
             if (filter.Sort == "asc")
             {
                 res = res.OrderBy(p => p.Id);
@@ -58,10 +56,10 @@ namespace sigreh.Controllers
 
         [HttpGet("all")]
         [Authorize(Roles = Role.ADMIN)]
-        public ActionResult <List<UserResponse>> FindAll([FromQuery] string sort)
+        public ActionResult<List<UserResponse>> FindAll([FromQuery] string sort)
         {
             var res = from s in context.Users.Include(p => p.Regions).Include(p => p.Departments).Include(p => p.Establishments) select s;
-  
+
             if (sort == "asc")
             {
                 res = res.OrderBy(p => p.Id);
@@ -79,7 +77,7 @@ namespace sigreh.Controllers
         public ActionResult<UserResponse> FindOne(int id)
         {
             var userId = int.Parse(User.Identity.Name);
-            if(id!=userId && !User.IsInRole(Role.ADMIN)) return Forbid();
+            if (id != userId && !User.IsInRole(Role.ADMIN)) return Forbid();
             var res = context.Users.Include(p => p.Regions).Include(p => p.Departments).Include(p => p.Establishments).FirstOrDefault(p => p.Id == id);
             if (res == null) return NotFound();
             return Ok(mapper.Map<UserResponse>(res));
@@ -120,7 +118,7 @@ namespace sigreh.Controllers
             if (res == null) return NotFound();
             var item = mapper.Map<UserUpdate>(res);
             data.ApplyTo(item, ModelState);
-            if(!TryValidateModel(item)) return ValidationProblem(ModelState);
+            if (!TryValidateModel(item)) return ValidationProblem(ModelState);
             mapper.Map(item, res);
             res.UpdatedAt = DateTime.UtcNow.Date;
             context.Users.Update(res);
@@ -177,21 +175,21 @@ namespace sigreh.Controllers
                     {
                         var res = context.Regions.FirstOrDefault(p => p.Id == body.Id);
                         if (res == null) return NotFound(new { message = "Unknow region" });
-                        if(body.Add == true) user.Regions.Add(res); else user.Regions.Remove(res);
+                        if (body.Add == true) user.Regions.Add(res); else user.Regions.Remove(res);
                     }
                     break;
                 case "department":
                     {
                         var res = context.Departments.FirstOrDefault(p => p.Id == body.Id);
                         if (res == null) return NotFound(new { message = "Unknow department" });
-                        if(body.Add == true) user.Departments.Add(res); else user.Departments.Remove(res);
+                        if (body.Add == true) user.Departments.Add(res); else user.Departments.Remove(res);
                     }
                     break;
                 case "establishment":
                     {
                         var res = context.Establishments.FirstOrDefault(p => p.Id == body.Id);
                         if (res == null) return NotFound(new { message = "Unknow establishment" });
-                        if(body.Add == true) user.Establishments.Add(res); else user.Establishments.Remove(res);
+                        if (body.Add == true) user.Establishments.Add(res); else user.Establishments.Remove(res);
                     }
                     break;
                 default: break;
@@ -206,9 +204,9 @@ namespace sigreh.Controllers
     {
         public UserProfile()
         {
-            CreateMap<User, UserResponse>(); 
+            CreateMap<User, UserResponse>();
             CreateMap<UserCreate, User>();
-            CreateMap<UserUpdate, User>(); 
+            CreateMap<UserUpdate, User>();
             CreateMap<User, UserUpdate>();
             CreateMap<Login, User>();
         }

@@ -1,9 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.JsonPatch;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -34,15 +32,15 @@ namespace sigreh.Controllers
         public ActionResult<List<ClientResponse>> Find(int id, [FromQuery] QueryParam filter)
         {
             var establishment = context.Establishments.Include(p => p.City).ThenInclude(p => p.Department).ThenInclude(p => p.Region).FirstOrDefault(p => p.Id == id);
-            if(establishment == null) return NotFound();
-            
+            if (establishment == null) return NotFound();
+
             var res = from s in context.Clients.Include(p => p.Partners).Where(p => p.EstablishmentId == establishment.Id) select s;
             var page = new Page(filter.Index, filter.Size);
             List<int> ids = new List<int>();
 
             res = res.Skip((page.Index - 1) * page.Size).Take(page.Size);
 
-            if (filter.Sort == "asc") 
+            if (filter.Sort == "asc")
             {
                 res = res.OrderBy(p => p.Name);
             }
@@ -51,19 +49,19 @@ namespace sigreh.Controllers
                 res = res.OrderByDescending(p => p.Name);
             }
 
-            if (filter.Search != null) 
+            if (filter.Search != null)
             {
                 string[] keys = filter.Search.Split(" ", StringSplitOptions.RemoveEmptyEntries);
                 res = res.Where(p => keys.Contains(p.Name) || keys.Contains(p.Firstname) || keys.Contains(p.Idnumber));
             }
-            
+
             if (User.IsInRole(Role.REH) || User.IsInRole(Role.GEH))
             {
                 var user = context.Users.Include(p => p.Establishments).FirstOrDefault(p => p.Id == int.Parse(User.Identity.Name));
-                if(user.Establishments == null) return NotFound();
+                if (user.Establishments == null) return NotFound();
                 foreach (var ue in user.Establishments)
                 {
-                    if(ue.Id == establishment.Id)
+                    if (ue.Id == establishment.Id)
                     {
                         return Ok(PaginatorService.Paginate(mapper.Map<List<REHClientResponse>>(res.ToList()), res.Count(), page));
                     }
@@ -72,7 +70,7 @@ namespace sigreh.Controllers
             else if (User.IsInRole(Role.DDMT) || User.IsInRole(Role.PP))
             {
                 var user = context.Users.Include(p => p.Departments).FirstOrDefault(p => p.Id == int.Parse(User.Identity.Name));
-                if(user.Departments == null) return NotFound();
+                if (user.Departments == null) return NotFound();
                 foreach (var ud in user.Departments)
                 {
                     if (ud.Id == establishment.City.DepartmentId)
@@ -84,9 +82,9 @@ namespace sigreh.Controllers
             else if (User.IsInRole(Role.DRMT))
             {
                 var user = context.Users.Include(p => p.Regions).FirstOrDefault(p => p.Id == int.Parse(User.Identity.Name));
-                if(user.Regions == null) return NotFound();
+                if (user.Regions == null) return NotFound();
                 foreach (var ur in user.Regions)
-                { 
+                {
                     if (ur.Id == establishment.City.Department.RegionId)
                     {
                         return Ok(PaginatorService.Paginate(mapper.Map<List<DRMTClientResponse>>(res.ToList()), res.Count(), page));
@@ -105,7 +103,7 @@ namespace sigreh.Controllers
             {
                 return Ok(PaginatorService.Paginate(mapper.Map<List<ClientResponse>>(res.ToList()), res.Count(), page));
             }
-            
+
             return NotFound();
         }
 
@@ -114,15 +112,15 @@ namespace sigreh.Controllers
         public ActionResult<ClientResponse> FindOne(int id)
         {
             var res = context.Clients.Include(p => p.Partners).Include(p => p.Establishment).ThenInclude(p => p.City).ThenInclude(p => p.Department).ThenInclude(p => p.Region).FirstOrDefault(p => p.Id == id);
-            if(res == null) return NotFound();
+            if (res == null) return NotFound();
 
             if (User.IsInRole(Role.REH) || User.IsInRole(Role.GEH))
             {
                 var user = context.Users.Include(p => p.Establishments).FirstOrDefault(p => p.Id == int.Parse(User.Identity.Name));
-                if(user.Establishments == null) return NotFound();
+                if (user.Establishments == null) return NotFound();
                 foreach (var ue in user.Establishments)
                 {
-                    if(ue.Id == res.EstablishmentId)
+                    if (ue.Id == res.EstablishmentId)
                     {
                         return Ok(mapper.Map<REHClientResponse>(res));
                     }
@@ -131,7 +129,7 @@ namespace sigreh.Controllers
             else if (User.IsInRole(Role.DDMT) || User.IsInRole(Role.PP))
             {
                 var user = context.Users.Include(p => p.Departments).FirstOrDefault(p => p.Id == int.Parse(User.Identity.Name));
-                if(user.Departments == null) return NotFound();
+                if (user.Departments == null) return NotFound();
                 foreach (var ud in user.Departments)
                 {
                     if (ud.Id == res.Establishment.City.DepartmentId)
@@ -143,9 +141,9 @@ namespace sigreh.Controllers
             else if (User.IsInRole(Role.DRMT))
             {
                 var user = context.Users.Include(p => p.Regions).FirstOrDefault(p => p.Id == int.Parse(User.Identity.Name));
-                if(user.Regions == null) return NotFound();
+                if (user.Regions == null) return NotFound();
                 foreach (var ur in user.Regions)
-                { 
+                {
                     if (ur.Id == res.Establishment.City.Department.RegionId)
                     {
                         return Ok(mapper.Map<DRMTClientResponse>(res));

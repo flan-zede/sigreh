@@ -1,9 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
-using System.ComponentModel.DataAnnotations.Schema;
-using System.Linq;
-using System.Threading.Tasks;
 
 namespace sigreh.Models
 {
@@ -63,9 +60,9 @@ namespace sigreh.Models
         public DateTime CreatedAt { get; set; }
 
         public DateTime UpdatedAt { get; set; }
-        
+
         public IList<Partner> Partners { get; set; }
-        
+
         public int EstablishmentId { get; set; }
 
         public Establishment Establishment { get; set; }

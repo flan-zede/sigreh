@@ -1,9 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.JsonPatch;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -23,20 +21,21 @@ namespace sigreh.Controllers
         private readonly SigrehContext context;
         private readonly IMapper mapper;
 
-        public CityController(SigrehContext _context, IMapper _mapper) { 
-            mapper = _mapper; 
-            context = _context; 
+        public CityController(SigrehContext _context, IMapper _mapper)
+        {
+            mapper = _mapper;
+            context = _context;
         }
 
         [HttpGet]
         public ActionResult<List<CityResponse>> Find([FromQuery] QueryParam filter)
         {
-            var res = from s in context.Cities.Include(p => p.Department) select s; 
+            var res = from s in context.Cities.Include(p => p.Department) select s;
             var page = new Page(filter.Index, filter.Size);
 
             res = res.Skip((page.Index - 1) * page.Size).Take(page.Size);
 
-            if (filter.Sort == "asc") 
+            if (filter.Sort == "asc")
             {
                 res = res.OrderBy(p => p.Name);
             }
@@ -45,7 +44,7 @@ namespace sigreh.Controllers
                 res = res.OrderByDescending(p => p.Name);
             }
 
-            if (filter.Search != null) 
+            if (filter.Search != null)
             {
                 string[] keys = filter.Search.Split(" ", StringSplitOptions.RemoveEmptyEntries);
                 res = res.Where(p => keys.Contains(p.Name));
@@ -57,9 +56,9 @@ namespace sigreh.Controllers
         [HttpGet("all")]
         public ActionResult<List<CityResponse>> Find([FromQuery] string sort)
         {
-            var res = from s in context.Cities select s; 
+            var res = from s in context.Cities select s;
 
-            if (sort == "asc") 
+            if (sort == "asc")
             {
                 res = res.OrderBy(p => p.Name);
             }

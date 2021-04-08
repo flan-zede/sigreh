@@ -1,10 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.JsonPatch;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using AutoMapper;
@@ -23,20 +19,21 @@ namespace sigreh.Controllers
         private readonly SigrehContext context;
         private readonly IMapper mapper;
 
-        public RegionController(SigrehContext _context, IMapper _mapper) { 
-            mapper = _mapper; 
-            context = _context; 
+        public RegionController(SigrehContext _context, IMapper _mapper)
+        {
+            mapper = _mapper;
+            context = _context;
         }
 
         [HttpGet]
-        public ActionResult <List<RegionResponse>> Find([FromQuery] QueryParam filter)
+        public ActionResult<List<RegionResponse>> Find([FromQuery] QueryParam filter)
         {
             var res = from s in context.Regions select s;
             var page = new Page(filter.Index, filter.Size);
 
             res = res.Skip((page.Index - 1) * page.Size).Take(page.Size);
 
-            if (filter.Sort == "asc") 
+            if (filter.Sort == "asc")
             {
                 res = res.OrderBy(p => p.Name);
             }
@@ -45,21 +42,21 @@ namespace sigreh.Controllers
                 res = res.OrderByDescending(p => p.Name);
             }
 
-            if (filter.Search != null) 
+            if (filter.Search != null)
             {
                 string[] keys = filter.Search.Split(" ", StringSplitOptions.RemoveEmptyEntries);
                 res = res.Where(p => keys.Contains(p.Name));
             }
-            
+
             return Ok(PaginatorService.Paginate(mapper.Map<List<RegionResponse>>(res.ToList()), res.Count(), page));
         }
 
         [HttpGet("all")]
-        public ActionResult <List<RegionResponse>> FindAll(string sort)
+        public ActionResult<List<RegionResponse>> FindAll(string sort)
         {
             var res = from s in context.Regions select s;
-            
-            if (sort == "asc") 
+
+            if (sort == "asc")
             {
                 res = res.OrderBy(p => p.Name);
             }
@@ -85,7 +82,7 @@ namespace sigreh.Controllers
     {
         public RegionProfile()
         {
-            CreateMap<Region, RegionResponse>(); 
+            CreateMap<Region, RegionResponse>();
         }
     }
 }

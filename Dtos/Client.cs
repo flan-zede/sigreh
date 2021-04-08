@@ -2,8 +2,6 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
-using System.Linq;
-using System.Threading.Tasks;
 
 namespace sigreh.Dtos
 {
@@ -53,7 +51,7 @@ namespace sigreh.Dtos
 
         [Required]
         public DateTime EnterDate { get; set; }
-        
+
         [Required]
         public string EnterTime { get; set; }
 
@@ -73,38 +71,38 @@ namespace sigreh.Dtos
         public DateTime UpdatedAt { get; set; }
 
         public Establishment Establishment { get; set; }
-        
+
         public User User { get; set; }
-        
+
         public IList<Partner> Partners { get; set; }
-        
+
     }
 
     public class ClientUpdate : ClientCreate
     {
     }
 
-    public class REHClientResponse: ClientResponse
+    public class REHClientResponse : ClientResponse
     {
     }
 
-    public class PPClientResponse: ClientResponse
+    public class PPClientResponse : ClientResponse
     {
     }
 
-    public class DDMTClientResponse: ClientResponse
+    public class DDMTClientResponse : ClientResponse
     {
     }
 
-    public class DRMTClientResponse: ClientResponse
+    public class DRMTClientResponse : ClientResponse
     {
     }
 
-    public class DSMTClientResponse: ClientResponse
+    public class DSMTClientResponse : ClientResponse
     {
     }
 
-    public class SMIClientResponse: ClientResponse
+    public class SMIClientResponse : ClientResponse
     {
     }
 }

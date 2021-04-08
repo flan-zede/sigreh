@@ -1,9 +1,6 @@
 ﻿using sigreh.Models;
-using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
-using System.Linq;
-using System.Threading.Tasks;
 
 namespace sigreh.Dtos
 {
@@ -20,7 +17,7 @@ namespace sigreh.Dtos
         public int Id { get; set; }
 
         public Department Department { get; set; }
-        
+
         public IList<Establishment> Establishments { get; set; }
     }
 
