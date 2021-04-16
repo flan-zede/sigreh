@@ -22,7 +22,7 @@ namespace sigreh
                 .ConfigureWebHostDefaults(webBuilder =>
                 {
                     webBuilder.UseStartup<Startup>();
-                    webBuilder.UseUrls("https://*:" + Environment.GetEnvironmentVariable("PORT")); 
+                    webBuilder.UseUrls("http://*:" + Environment.GetEnvironmentVariable("PORT")); 
                 });
     }
 }
