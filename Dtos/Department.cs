@@ -1,5 +1,6 @@
 ﻿using sigreh.Models;
 using System.Collections.Generic;
+using AutoMapper;
 
 namespace sigreh.Dtos
 {
@@ -16,5 +17,13 @@ namespace sigreh.Dtos
         public IList<City> Cities { get; set; }
 
         public IList<User> Users { get; set; }
+    }
+    
+    public class DepartmentProfile : Profile
+    {
+        public DepartmentProfile()
+        {
+            CreateMap<Department, DepartmentResponse>();
+        }
     }
 }

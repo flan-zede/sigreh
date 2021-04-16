@@ -4,6 +4,7 @@ using System.Linq;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.JsonPatch;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
 using AutoMapper;
 using sigreh.Data;
@@ -20,11 +21,13 @@ namespace sigreh.Controllers
     {
         private readonly SigrehContext context;
         private readonly IMapper mapper;
+        private readonly IHubContext<NotificationHub> hubContext;
 
-        public UserController(SigrehContext _context, IMapper _mapper)
+        public UserController(SigrehContext _context, IMapper _mapper, IHubContext<NotificationHub> _hubContext)
         {
             mapper = _mapper;
             context = _context;
+            hubContext = _hubContext; 
         }
 
         [HttpGet]
@@ -92,7 +95,16 @@ namespace sigreh.Controllers
             item.CreatedAt = DateTime.UtcNow.Date;
             if (item == null) throw new ArgumentNullException(nameof(item));
             context.Users.Add(item);
+            Notification notification = new Notification()  
+            {  
+                Title = "New user added",  
+                Content = "Added successfully " + item.Name + " " + item.Firstname,
+                Viewed = false,
+                CreatedAt = DateTime.UtcNow.Date  
+            };  
+            context.Notifications.Add(notification);  
             context.SaveChanges();
+            hubContext.Clients.All.SendAsync("notification", mapper.Map<NotificationResponse>(notification));
             return Ok(mapper.Map<UserResponse>(item));
         }
 
@@ -200,15 +212,4 @@ namespace sigreh.Controllers
 
     }
 
-    public class UserProfile : Profile
-    {
-        public UserProfile()
-        {
-            CreateMap<User, UserResponse>();
-            CreateMap<UserCreate, User>();
-            CreateMap<UserUpdate, User>();
-            CreateMap<User, UserUpdate>();
-            CreateMap<Login, User>();
-        }
-    }
 }

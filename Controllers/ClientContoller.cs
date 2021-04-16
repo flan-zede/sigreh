@@ -220,18 +220,4 @@ namespace sigreh.Controllers
 
     }
 
-    public class ClientProfile : Profile
-    {
-        public ClientProfile()
-        {
-            CreateMap<Client, ClientResponse>(); CreateMap<ClientCreate, Client>();
-            CreateMap<ClientUpdate, Client>(); CreateMap<Client, ClientUpdate>();
-            CreateMap<Client, REHClientResponse>();
-            CreateMap<Client, PPClientResponse>();
-            CreateMap<Client, DDMTClientResponse>();
-            CreateMap<Client, DRMTClientResponse>();
-            CreateMap<Client, DSMTClientResponse>();
-            CreateMap<Client, SMIClientResponse>();
-        }
-    }
 }

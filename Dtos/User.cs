@@ -2,6 +2,8 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
+using AutoMapper;
+using sigreh.Wrappers;
 
 namespace sigreh.Dtos
 {
@@ -63,6 +65,18 @@ namespace sigreh.Dtos
 
     public class UserUpdate : UserCreate
     {
+    }
+
+    public class UserProfile : Profile
+    {
+        public UserProfile()
+        {
+            CreateMap<User, UserResponse>();
+            CreateMap<UserCreate, User>();
+            CreateMap<UserUpdate, User>();
+            CreateMap<User, UserUpdate>();
+            CreateMap<Login, User>();
+        }
     }
 
 }

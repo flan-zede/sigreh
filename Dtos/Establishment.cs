@@ -1,6 +1,7 @@
 ﻿using sigreh.Models;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
+using AutoMapper;
 
 namespace sigreh.Dtos
 {
@@ -32,5 +33,16 @@ namespace sigreh.Dtos
 
     public class EstablishmentUpdate : EstablishmentCreate
     {
+    }
+    
+    public class EstablishmentProfile : Profile
+    {
+        public EstablishmentProfile()
+        {
+            CreateMap<Establishment, EstablishmentResponse>();
+            CreateMap<EstablishmentCreate, Establishment>();
+            CreateMap<EstablishmentUpdate, Establishment>();
+            CreateMap<Establishment, EstablishmentUpdate>();
+        }
     }
 }

@@ -139,12 +139,4 @@ namespace sigreh.Controllers
         }
     }
 
-    public class EstablishmentProfile : Profile
-    {
-        public EstablishmentProfile()
-        {
-            CreateMap<Establishment, EstablishmentResponse>(); CreateMap<EstablishmentCreate, Establishment>();
-            CreateMap<EstablishmentUpdate, Establishment>(); CreateMap<Establishment, EstablishmentUpdate>();
-        }
-    }
 }

@@ -78,11 +78,4 @@ namespace sigreh.Controllers
 
     }
 
-    public class RegionProfile : Profile
-    {
-        public RegionProfile()
-        {
-            CreateMap<Region, RegionResponse>();
-        }
-    }
 }

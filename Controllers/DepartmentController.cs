@@ -86,11 +86,4 @@ namespace sigreh.Controllers
 
     }
 
-    public class DepartmentProfile : Profile
-    {
-        public DepartmentProfile()
-        {
-            CreateMap<Department, DepartmentResponse>();
-        }
-    }
 }

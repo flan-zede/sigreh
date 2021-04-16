@@ -12,6 +12,7 @@ namespace sigreh.Data
         public DbSet<Department> Departments { get; set; }
         public DbSet<City> Cities { get; set; }
         public DbSet<Establishment> Establishments { get; set; }
+        public DbSet<Notification> Notifications { get; set; }
         public DbSet<Client> Clients { get; set; }
         public DbSet<Partner> Partners { get; set; }
     }

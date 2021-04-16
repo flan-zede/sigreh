@@ -1,6 +1,7 @@
 ﻿using sigreh.Models;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
+using AutoMapper;
 
 namespace sigreh.Dtos
 {
@@ -22,5 +23,14 @@ namespace sigreh.Dtos
         public int Id { get; set; }
 
         public IList<Client> Client { get; set; }
+    }
+    
+    public class PartnerProfile : Profile
+    {
+        public PartnerProfile()
+        {
+            CreateMap<Partner, PartnerResponse>();
+            CreateMap<PartnerCreate, Partner>();
+        }
     }
 }

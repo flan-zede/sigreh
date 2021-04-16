@@ -1,6 +1,7 @@
 ﻿using sigreh.Models;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
+using AutoMapper;
 
 namespace sigreh.Dtos
 {
@@ -23,5 +24,16 @@ namespace sigreh.Dtos
 
     public class CityUpdate : CityCreate
     {
+    }
+    
+    public class CityProfile : Profile
+    {
+        public CityProfile()
+        {
+            CreateMap<City, CityResponse>();
+            CreateMap<CityCreate, City>();
+            CreateMap<CityUpdate, City>();
+            CreateMap<City, CityUpdate>();
+        }
     }
 }

@@ -44,12 +44,4 @@ namespace sigreh.Controllers
         }
     }
 
-    public class PartnerProfile : Profile
-    {
-        public PartnerProfile()
-        {
-            CreateMap<Partner, PartnerResponse>();
-            CreateMap<PartnerCreate, Partner>();
-        }
-    }
 }

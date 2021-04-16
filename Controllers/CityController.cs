@@ -136,12 +136,4 @@ namespace sigreh.Controllers
         }
     }
 
-    public class CityProfile : Profile
-    {
-        public CityProfile()
-        {
-            CreateMap<City, CityResponse>(); CreateMap<CityCreate, City>();
-            CreateMap<CityUpdate, City>(); CreateMap<City, CityUpdate>();
-        }
-    }
 }
