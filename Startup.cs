@@ -28,9 +28,18 @@ namespace sigreh
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
-            services.AddDbContext<SigrehContext>(opt => opt.UseSqlServer(Configuration.GetConnectionString("SigrehConnection")));
+            //services.AddDbContext<SigrehContext>(opt => opt.UseSqlServer(Configuration.GetConnectionString("SigrehConnection"))); 
+            services.AddDbContext<SigrehContext>(options => options.UseMySql(Configuration.GetConnectionString("SigrehConnection"))); 
 
-            services.AddCors();
+            services.AddSignalR();
+
+            services.AddCors(options =>
+            {
+                options.AddPolicy(
+                    "CorsPolicy", 
+                    builder => { builder.AllowAnyHeader().AllowAnyMethod().SetIsOriginAllowed(origin => true).AllowCredentials(); }
+                );
+            });
 
             services.AddControllers().AddNewtonsoftJson(options =>
               options.SerializerSettings.ReferenceLoopHandling = Newtonsoft.Json.ReferenceLoopHandling.Ignore
@@ -42,14 +51,14 @@ namespace sigreh
 
             services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme).AddJwtBearer(options => JwtService.ValidateJwt(options));
 
-            services.AddAuthorization(auth => auth
-                .AddPolicy("Bearer", new AuthorizationPolicyBuilder()
-                .AddAuthenticationSchemes(JwtBearerDefaults.AuthenticationScheme)
-                .RequireAuthenticatedUser()
-                .Build()
-                ));
+            services.AddAuthorization(options => 
+                options.AddPolicy(
+                    "Bearer", 
+                    new AuthorizationPolicyBuilder()
+                        .AddAuthenticationSchemes(JwtBearerDefaults.AuthenticationScheme).RequireAuthenticatedUser().Build()
+                )
+            );
             
-            services.AddSignalR();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -64,7 +73,7 @@ namespace sigreh
 
             app.UseRouting();
 
-            app.UseCors(x => x.AllowAnyMethod().AllowAnyHeader().SetIsOriginAllowed(origin => true).AllowCredentials());
+            app.UseCors("CorsPolicy");
 
             app.UseAuthentication();
 

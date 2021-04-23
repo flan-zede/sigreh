@@ -1,19 +1,36 @@
 ﻿using System;
+using Microsoft.EntityFrameworkCore.Metadata;
 using Microsoft.EntityFrameworkCore.Migrations;
 
 namespace sigreh.Migrations
 {
-    public partial class Initial : Migration
+    public partial class InitialCreate : Migration
     {
         protected override void Up(MigrationBuilder migrationBuilder)
         {
+            migrationBuilder.CreateTable(
+                name: "Notifications",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("MySql:ValueGenerationStrategy", MySqlValueGenerationStrategy.IdentityColumn),
+                    Title = table.Column<string>(type: "longtext CHARACTER SET utf8mb4", nullable: true),
+                    Content = table.Column<string>(type: "longtext CHARACTER SET utf8mb4", nullable: true),
+                    Viewed = table.Column<bool>(type: "tinyint(1)", nullable: false),
+                    CreatedAt = table.Column<DateTime>(type: "datetime(6)", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Notifications", x => x.Id);
+                });
+
             migrationBuilder.CreateTable(
                 name: "Regions",
                 columns: table => new
                 {
                     Id = table.Column<int>(type: "int", nullable: false)
-                        .Annotation("SqlServer:Identity", "1, 1"),
-                    Name = table.Column<string>(type: "nvarchar(max)", nullable: false)
+                        .Annotation("MySql:ValueGenerationStrategy", MySqlValueGenerationStrategy.IdentityColumn),
+                    Name = table.Column<string>(type: "longtext CHARACTER SET utf8mb4", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -25,23 +42,23 @@ namespace sigreh.Migrations
                 columns: table => new
                 {
                     Id = table.Column<int>(type: "int", nullable: false)
-                        .Annotation("SqlServer:Identity", "1, 1"),
-                    Name = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    Firstname = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    Birthdate = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    Gender = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    Nationality = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    Idnumber = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    IdnumberNature = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    PhoneType = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    Phone = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    Username = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    Email = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    Password = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    Active = table.Column<bool>(type: "bit", nullable: false),
-                    Role = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    UpdatedAt = table.Column<DateTime>(type: "datetime2", nullable: false)
+                        .Annotation("MySql:ValueGenerationStrategy", MySqlValueGenerationStrategy.IdentityColumn),
+                    Name = table.Column<string>(type: "longtext CHARACTER SET utf8mb4", nullable: true),
+                    Firstname = table.Column<string>(type: "longtext CHARACTER SET utf8mb4", nullable: true),
+                    Birthdate = table.Column<DateTime>(type: "datetime(6)", nullable: false),
+                    Gender = table.Column<string>(type: "longtext CHARACTER SET utf8mb4", nullable: true),
+                    Nationality = table.Column<string>(type: "longtext CHARACTER SET utf8mb4", nullable: true),
+                    Idnumber = table.Column<string>(type: "longtext CHARACTER SET utf8mb4", nullable: true),
+                    IdnumberNature = table.Column<string>(type: "longtext CHARACTER SET utf8mb4", nullable: true),
+                    PhoneType = table.Column<string>(type: "longtext CHARACTER SET utf8mb4", nullable: false),
+                    Phone = table.Column<string>(type: "longtext CHARACTER SET utf8mb4", nullable: false),
+                    Username = table.Column<string>(type: "longtext CHARACTER SET utf8mb4", nullable: false),
+                    Email = table.Column<string>(type: "longtext CHARACTER SET utf8mb4", nullable: false),
+                    Password = table.Column<string>(type: "longtext CHARACTER SET utf8mb4", nullable: false),
+                    Active = table.Column<bool>(type: "tinyint(1)", nullable: false),
+                    Role = table.Column<string>(type: "longtext CHARACTER SET utf8mb4", nullable: true),
+                    CreatedAt = table.Column<DateTime>(type: "datetime(6)", nullable: false),
+                    UpdatedAt = table.Column<DateTime>(type: "datetime(6)", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -53,8 +70,8 @@ namespace sigreh.Migrations
                 columns: table => new
                 {
                     Id = table.Column<int>(type: "int", nullable: false)
-                        .Annotation("SqlServer:Identity", "1, 1"),
-                    Name = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                        .Annotation("MySql:ValueGenerationStrategy", MySqlValueGenerationStrategy.IdentityColumn),
+                    Name = table.Column<string>(type: "longtext CHARACTER SET utf8mb4", nullable: false),
                     RegionId = table.Column<int>(type: "int", nullable: false)
                 },
                 constraints: table =>
@@ -97,8 +114,8 @@ namespace sigreh.Migrations
                 columns: table => new
                 {
                     Id = table.Column<int>(type: "int", nullable: false)
-                        .Annotation("SqlServer:Identity", "1, 1"),
-                    Name = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                        .Annotation("MySql:ValueGenerationStrategy", MySqlValueGenerationStrategy.IdentityColumn),
+                    Name = table.Column<string>(type: "longtext CHARACTER SET utf8mb4", nullable: false),
                     DepartmentId = table.Column<int>(type: "int", nullable: false)
                 },
                 constraints: table =>
@@ -141,11 +158,11 @@ namespace sigreh.Migrations
                 columns: table => new
                 {
                     Id = table.Column<int>(type: "int", nullable: false)
-                        .Annotation("SqlServer:Identity", "1, 1"),
-                    Name = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    Nature = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    Municipality = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    Location = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                        .Annotation("MySql:ValueGenerationStrategy", MySqlValueGenerationStrategy.IdentityColumn),
+                    Name = table.Column<string>(type: "longtext CHARACTER SET utf8mb4", nullable: false),
+                    Nature = table.Column<string>(type: "longtext CHARACTER SET utf8mb4", nullable: false),
+                    Municipality = table.Column<string>(type: "longtext CHARACTER SET utf8mb4", nullable: true),
+                    Location = table.Column<string>(type: "longtext CHARACTER SET utf8mb4", nullable: true),
                     CityId = table.Column<int>(type: "int", nullable: false)
                 },
                 constraints: table =>
@@ -164,25 +181,25 @@ namespace sigreh.Migrations
                 columns: table => new
                 {
                     Id = table.Column<int>(type: "int", nullable: false)
-                        .Annotation("SqlServer:Identity", "1, 1"),
-                    Name = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    Firstname = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    Birthdate = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    Gender = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    Nationality = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    Idnumber = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    IdnumberNature = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    PhoneType = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    Phone = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    OccupationType = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                        .Annotation("MySql:ValueGenerationStrategy", MySqlValueGenerationStrategy.IdentityColumn),
+                    Name = table.Column<string>(type: "longtext CHARACTER SET utf8mb4", nullable: false),
+                    Firstname = table.Column<string>(type: "longtext CHARACTER SET utf8mb4", nullable: false),
+                    Birthdate = table.Column<DateTime>(type: "datetime(6)", nullable: false),
+                    Gender = table.Column<string>(type: "longtext CHARACTER SET utf8mb4", nullable: false),
+                    Nationality = table.Column<string>(type: "longtext CHARACTER SET utf8mb4", nullable: false),
+                    Idnumber = table.Column<string>(type: "longtext CHARACTER SET utf8mb4", nullable: false),
+                    IdnumberNature = table.Column<string>(type: "longtext CHARACTER SET utf8mb4", nullable: false),
+                    PhoneType = table.Column<string>(type: "longtext CHARACTER SET utf8mb4", nullable: false),
+                    Phone = table.Column<string>(type: "longtext CHARACTER SET utf8mb4", nullable: false),
+                    OccupationType = table.Column<string>(type: "longtext CHARACTER SET utf8mb4", nullable: false),
                     NumberOfNights = table.Column<int>(type: "int", nullable: false),
                     NumberOfHours = table.Column<int>(type: "int", nullable: false),
-                    BedroomNumber = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    BedroomType = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    EnterDate = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    EnterTime = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    UpdatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    BedroomNumber = table.Column<string>(type: "longtext CHARACTER SET utf8mb4", nullable: false),
+                    BedroomType = table.Column<string>(type: "longtext CHARACTER SET utf8mb4", nullable: false),
+                    EnterDate = table.Column<DateTime>(type: "datetime(6)", nullable: false),
+                    EnterTime = table.Column<string>(type: "longtext CHARACTER SET utf8mb4", nullable: false),
+                    CreatedAt = table.Column<DateTime>(type: "datetime(6)", nullable: false),
+                    UpdatedAt = table.Column<DateTime>(type: "datetime(6)", nullable: false),
                     EstablishmentId = table.Column<int>(type: "int", nullable: false),
                     UserId = table.Column<int>(type: "int", nullable: false)
                 },
@@ -232,9 +249,9 @@ namespace sigreh.Migrations
                 columns: table => new
                 {
                     Id = table.Column<int>(type: "int", nullable: false)
-                        .Annotation("SqlServer:Identity", "1, 1"),
-                    Gender = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    name = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                        .Annotation("MySql:ValueGenerationStrategy", MySqlValueGenerationStrategy.IdentityColumn),
+                    Gender = table.Column<string>(type: "longtext CHARACTER SET utf8mb4", nullable: false),
+                    name = table.Column<string>(type: "longtext CHARACTER SET utf8mb4", nullable: true),
                     Age = table.Column<int>(type: "int", nullable: false),
                     ClientId = table.Column<int>(type: "int", nullable: false)
                 },
@@ -302,6 +319,9 @@ namespace sigreh.Migrations
 
             migrationBuilder.DropTable(
                 name: "EstablishmentUser");
+
+            migrationBuilder.DropTable(
+                name: "Notifications");
 
             migrationBuilder.DropTable(
                 name: "Partners");
